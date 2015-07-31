@@ -6,7 +6,10 @@ def compute_basis(n,d):
 
 #a wedge is represented by taking subsets of the basis
 def wedge_basis(p,basis):
-    return Subsets(basis,p);
+    if p>=0:
+        return Subsets(basis,p);
+    else:
+        return Set()
 
 #a tensor is a cartesian product on the basis
 def tensor_basis(basis1,basis2):
@@ -73,3 +76,6 @@ def compute_betti(n,d,p,q):
 print compute_betti(2,2,2,0)
 print compute_betti(2,2,3,1)
 print compute_betti(2,2,2,1)
+print compute_betti(2,2,1,1)
+print compute_betti(2,2,0,0)
+print compute_betti(2,2,0,1)
