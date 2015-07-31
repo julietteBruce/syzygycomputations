@@ -65,9 +65,11 @@ def compute_rank(n,d,p,q):
     return matrix(map(to_vector,rows)).rank()
 
 def compute_betti(n,d,p,q):
-    ker_rank = complex_basis(n,d,p,q).cardinality() - compute_rank(2,2,2,1)
-    img_rank = compute_rank(2,2,3,0)
+    ker_rank = complex_basis(n,d,p,q).cardinality() - compute_rank(n,d,p,q)
+    img_rank = compute_rank(n,d,(p+1),q-1)
     return ker_rank-img_rank
 
 #test code
+print compute_betti(2,2,2,0)
+print compute_betti(2,2,3,1)
 print compute_betti(2,2,2,1)
