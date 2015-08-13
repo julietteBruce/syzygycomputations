@@ -1,5 +1,8 @@
--Try to speed up the code:
-     -Sparseness
-     -replace Q by finite field
-     -numerical linear algebra
-     -multidegree
+-Possible speedups:
+    -Sparseness
+    -replace Q by finite field
+    -numerical linear algebra
+    -multidegree
+        -need a new representation for the basis
+    -use hilbert series
+    -reuse the ranks, don't compute them separately for each betti number
