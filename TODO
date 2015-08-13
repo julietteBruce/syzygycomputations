@@ -1,0 +1,5 @@
+-Try to speed up the code:
+     -Sparseness
+     -replace Q by finite field
+     -numerical linear algebra
+     -multidegree
