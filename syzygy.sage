@@ -21,6 +21,30 @@ def complex_basis(n,d,p,q):
     sqd_basis = compute_basis(n,q*d)
     return tensor_basis(wedge_basis(p,sd_basis),sqd_basis)
 
+def tuple_sum(a,b):
+    return tuple([x+y for (x,y) in zip(a,b)])
+
+def multidegree(elem):
+    (ms,f) = elem
+    md = f
+    for m in ms:
+        md = tuple_sum(md,m)
+    return md
+
+#sort the elements into bins by multidegree
+def bin_multidegrees(basis):
+    bins = dict()
+    for elem in basis:
+        md = multidegree(elem)
+        if md in bins:
+            bins[md].append(tuple(elem))
+        else:
+            bins[md]=[tuple(elem)]
+    res = dict()
+    for k in bins:
+        res[k] = FiniteEnumeratedSet(bins[k])
+    return res
+
 #computes the image of a basis element, the returned value is a list of basis elements in the image
 #along with their signs
 def compute_image(elem):
@@ -32,9 +56,7 @@ def compute_image(elem):
         new_list = list(lst)
         del new_list[i];
         return new_list
-    def tuple_sum(a,b):
-        return tuple([x+y for (x,y) in zip(a,b)])
-    return [((i%2),[Set(without(ms_list,i)),tuple_sum(f,ms_list[i])]) for i in [0..(len(ms_list)-1)]]
+    return [((i%2),(Set(without(ms_list,i)),tuple_sum(f,ms_list[i]))) for i in [0..(len(ms_list)-1)]]
 
 #some useful functions for displaying elements
 def format_monomial(elem):
@@ -53,19 +75,28 @@ def format_basis(elem):
 #compute the rank of the \delta_p map in row q
 def compute_rank(n,d,p,q):
     #an element of S_d is given by n integers (
-    domain_basis = complex_basis(n,d,p,q)
-    codomain_basis = complex_basis(n,d,p-1,q+1)
+    domain_basis = bin_multidegrees(complex_basis(n,d,p,q))
+    codomain_basis = bin_multidegrees(complex_basis(n,d,p-1,q+1))
+    r=0
+    #for each multidegree compute the matrix
+    for md in domain_basis:
+        sub_domain_basis = domain_basis[md]
+        #safe to skip those where the codomain doesn't contain any of that multidegree
+        #this is needed to prevent crashes on certain edge cases
+        if md not in codomain_basis:
+            continue;
+        sub_codomain_basis = codomain_basis[md]
+        rows = map(compute_image,sub_domain_basis);
+        #converts a list of (sign,basis_element) to a vector for a row of the matrix
+        def to_vector(elem):
+            res = [0]*sub_codomain_basis.cardinality()
+            for (sign,b) in elem:
+                i = sub_codomain_basis.rank(b)
+                res[i] = 1 if sign==0 else -1
+            return res
+        r += matrix(map(to_vector,rows)).rank()
+    return r;
 
-    rows = map(compute_image,domain_basis)
-    #converts a list of (sign,basis_element) to a vector for a row of the matrix
-    def to_vector(elem):
-        res = [0]*codomain_basis.cardinality()
-        for (sign,b) in elem:
-            i = codomain_basis.rank(b)
-            res[i] = 1 if sign==0 else -1
-        return res
-    
-    return matrix(map(to_vector,rows)).rank()
 
 def compute_betti(n,d,p,q):
     ker_rank = complex_basis(n,d,p,q).cardinality() - compute_rank(n,d,p,q)
@@ -79,3 +110,20 @@ print compute_betti(2,2,2,1)
 print compute_betti(2,2,1,1)
 print compute_betti(2,2,0,0)
 print compute_betti(2,2,0,1)
+
+print compute_betti(2,3,0,0)
+print compute_betti(2,3,1,1)
+print compute_betti(2,3,2,1)
+print compute_betti(2,3,3,1)
+print compute_betti(2,3,4,1)
+print compute_betti(2,3,5,1)
+print compute_betti(2,3,6,1)
+print compute_betti(2,3,7,1)
+
+print compute_betti(2,3,1,2)
+print compute_betti(2,3,2,2)
+print compute_betti(2,3,3,2)
+print compute_betti(2,3,4,2)
+print compute_betti(2,3,5,2)
+print compute_betti(2,3,6,2)
+print compute_betti(2,3,7,2)
