@@ -2,7 +2,7 @@
 #we represent an element of S_d by a n-tuple of integers adding up to d
 #compute the basis for S_d
 def compute_basis(n,d):
-    return map(tuple,IntegerVectors(d,n+1).list())
+    return map(tuple,IntegerVectors(d,n+1))
 
 #a wedge is represented by taking subsets of the basis
 def wedge_basis(p,basis):
