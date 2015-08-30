@@ -1,4 +1,6 @@
 
+import operator
+
 #we represent an element of S_d by a n-tuple of integers adding up to d
 #compute the basis for S_d
 def compute_basis(n,d):
@@ -62,19 +64,35 @@ def format_basis(elem):
     return '\wedge '.join(map(format_monomial,ms_list)) + "\otimes " + format_monomial(f)
     
 
+def normalize_md(md):
+    md_list = list(md)
+    md_list.sort()
+    return tuple(md_list)
+
+
 #compute the rank of the \delta_p map in row q
 def compute_rank(n,d,p,q):
     #an element of S_d is given by n integers (
     domain_basis = bin_multidegrees(complex_basis(n,d,p,q))
     codomain_basis = bin_multidegrees(complex_basis(n,d,p-1,q+1))
-    r=0
     #for each multidegree compute the matrix
+    counts = dict();
+    ranks = dict();
     for md in domain_basis:
+        normalized = normalize_md(md)
+        if normalized in counts:
+            counts[normalized]+=1
+        else:
+            counts[normalized]=1
+        if md!=normalized:
+            continue;
         sub_domain_basis = domain_basis[md]
         #safe to skip those where the codomain doesn't contain any of that multidegree
         #this is needed to prevent crashes on certain edge cases
         if md not in codomain_basis:
+            ranks[md]=0;
             continue;
+
         sub_codomain_basis = codomain_basis[md]
         #note, p==number of tensors in the domain == length of domMS
         def check_image(domainId,codomainId):
@@ -99,8 +117,11 @@ def compute_rank(n,d,p,q):
                     return 0;
             #all but the last one maches
             return 1 if (p-1)%2==0 else -1
-        r += matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank();
-    return r;
+        ranks[md] = matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank();
+    r=0
+    for md in counts:
+        r+=counts[md]*ranks[md]
+    return r
 
 
 def compute_betti(n,d,p,q):
