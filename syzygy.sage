@@ -31,32 +31,22 @@ def multidegree(elem):
         md = tuple_sum(md,m)
     return md
 
+def normalize_elem(elem):
+    (ms,f) = elem
+    ms_list = list(ms)
+    ms_list.sort()
+    return (ms_list,f)
+
 #sort the elements into bins by multidegree
 def bin_multidegrees(basis):
     bins = dict()
     for elem in basis:
         md = multidegree(elem)
         if md in bins:
-            bins[md].append(tuple(elem))
+            bins[md].append(normalize_elem(elem))
         else:
-            bins[md]=[tuple(elem)]
-    res = dict()
-    for k in bins:
-        res[k] = FiniteEnumeratedSet(bins[k])
-    return res
-
-#computes the image of a basis element, the returned value is a list of basis elements in the image
-#along with their signs
-def compute_image(elem):
-    (ms,f) = elem
-    #wildly ineffcient way of doing things so that ordering works
-    ms_list = list(ms)
-    ms_list.sort()
-    def without(lst,i):
-        new_list = list(lst)
-        del new_list[i];
-        return new_list
-    return [((i%2),(Set(without(ms_list,i)),tuple_sum(f,ms_list[i]))) for i in [0..(len(ms_list)-1)]]
+            bins[md]=[normalize_elem(elem)]
+    return bins
 
 #some useful functions for displaying elements
 def format_monomial(elem):
@@ -86,15 +76,30 @@ def compute_rank(n,d,p,q):
         if md not in codomain_basis:
             continue;
         sub_codomain_basis = codomain_basis[md]
-        rows = map(compute_image,sub_domain_basis);
-        #converts a list of (sign,basis_element) to a vector for a row of the matrix
-        def to_vector(elem):
-            res = [0]*sub_codomain_basis.cardinality()
-            for (sign,b) in elem:
-                i = sub_codomain_basis.rank(b)
-                res[i] = 1 if sign==0 else -1
-            return res
-        r += matrix(map(to_vector,rows)).rank()
+        #note, p==number of tensors in the domain == length of domMS
+        def check_image(domainId,codomainId):
+            (domMS,domF) = sub_domain_basis[domainId];
+            (codomMS,codomF) = sub_codomain_basis[codomainId];
+            # we know by construction that domMS and codomMS differ by at most one in lenght, so we check
+            # to see if there is exactly one difference in content, if there is, then since the multidegrees
+            # match, the codomain object must be a piece of the sum that is the image of the domain object
+            candidate = 0
+            #yes the -1 is correct, we check the last element separately
+            for i in xrange(0,p-1):
+                if candidate==0:
+                    if domMS[i]!=codomMS[i]:
+                        candidate = 1 if i%2==0 else -1
+                else:
+                    if domMS[i]!=codomMS[i-1]:
+                        return 0
+            if candidate!=0:
+                if domMS[p-1]==codomMS[p-2]:
+                    return candidate;
+                else:
+                    return 0;
+            #all but the last one maches
+            return 1 if (p-1)%2==0 else -1
+        r += matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank();
     return r;
 
 
