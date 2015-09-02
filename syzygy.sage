@@ -35,8 +35,7 @@ def multidegree(elem):
 
 def normalize_elem(elem):
     (ms,f) = elem
-    ms_list = list(ms)
-    ms_list.sort()
+    ms_list = sorted(ms);
     return (tuple(ms_list),f)
 
 #sort the elements into bins by multidegree
@@ -102,14 +101,16 @@ def compute_rank(n,d,p,q):
             continue;
 
         sub_codomain_basis = codomain_basis[md]
-        sub_codomain_ids = {sub_codomain_basis[n]:n for n in [0..(len(sub_codomain_basis)-1)]}
+        sub_codomain_ids = {elem:n for (n,elem) in enumerate(sub_codomain_basis)}
         rows = map(lambda x : compute_image(x,sub_codomain_ids),sub_domain_basis)
         def check_image(domainId,codomainId):
             if codomainId in rows[domainId]:
                 return rows[domainId][codomainId]
             else:
                 return 0
-        ranks[md] = matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank();
+        #force it to just use linbox, since it usually won't be full rank
+        ranks[md] = matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank(algorithm='linbox');
+        #print "M:",len(sub_domain_basis),"x",len(sub_codomain_basis)," rank ",ranks[md]
     r=0
     for md in counts:
         r+=counts[md]*ranks[md]
