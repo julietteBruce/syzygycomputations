@@ -37,7 +37,7 @@ def normalize_elem(elem):
     (ms,f) = elem
     ms_list = list(ms)
     ms_list.sort()
-    return (ms_list,f)
+    return (tuple(ms_list),f)
 
 #sort the elements into bins by multidegree
 def bin_multidegrees(basis):
@@ -49,6 +49,15 @@ def bin_multidegrees(basis):
         else:
             bins[md]=[normalize_elem(elem)]
     return bins
+
+#computes the image of a basis element, the returned value is a dict from basis elements in the codomain to a sign
+def compute_image(elem,codomain_basis_ids):
+    (ms,f) = elem
+    def without(lst,i):
+        new_list = list(lst)
+        del new_list[i];
+        return tuple(new_list)
+    return {codomain_basis_ids[(without(ms,i),tuple_sum(f,ms[i]))]:(1 if i%2==0 else -1) for i in [0..(len(ms)-1)]}
 
 #some useful functions for displaying elements
 def format_monomial(elem):
@@ -68,7 +77,6 @@ def normalize_md(md):
     md_list = list(md)
     md_list.sort()
     return tuple(md_list)
-
 
 #compute the rank of the \delta_p map in row q
 def compute_rank(n,d,p,q):
@@ -94,29 +102,13 @@ def compute_rank(n,d,p,q):
             continue;
 
         sub_codomain_basis = codomain_basis[md]
-        #note, p==number of tensors in the domain == length of domMS
+        sub_codomain_ids = {sub_codomain_basis[n]:n for n in [0..(len(sub_codomain_basis)-1)]}
+        rows = map(lambda x : compute_image(x,sub_codomain_ids),sub_domain_basis)
         def check_image(domainId,codomainId):
-            (domMS,domF) = sub_domain_basis[domainId];
-            (codomMS,codomF) = sub_codomain_basis[codomainId];
-            # we know by construction that domMS and codomMS differ by at most one in lenght, so we check
-            # to see if there is exactly one difference in content, if there is, then since the multidegrees
-            # match, the codomain object must be a piece of the sum that is the image of the domain object
-            candidate = 0
-            #yes the -1 is correct, we check the last element separately
-            for i in xrange(0,p-1):
-                if candidate==0:
-                    if domMS[i]!=codomMS[i]:
-                        candidate = 1 if i%2==0 else -1
-                else:
-                    if domMS[i]!=codomMS[i-1]:
-                        return 0
-            if candidate!=0:
-                if domMS[p-1]==codomMS[p-2]:
-                    return candidate;
-                else:
-                    return 0;
-            #all but the last one maches
-            return 1 if (p-1)%2==0 else -1
+            if codomainId in rows[domainId]:
+                return rows[domainId][codomainId]
+            else:
+                return 0
         ranks[md] = matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank();
     r=0
     for md in counts:
