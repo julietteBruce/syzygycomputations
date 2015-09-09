@@ -38,86 +38,92 @@ def normalize_elem(elem):
     ms_list = sorted(ms);
     return (tuple(ms_list),f)
 
-#sort the elements into bins by multidegree
-def bin_multidegrees(basis):
-    bins = dict()
-    for elem in basis:
-        md = multidegree(elem)
-        if md in bins:
-            bins[md].append(normalize_elem(elem))
-        else:
-            bins[md]=[normalize_elem(elem)]
-    return bins
-
-#computes the image of a basis element, the returned value is a dict from basis elements in the codomain to a sign
-def compute_image(elem,codomain_basis_ids):
-    (ms,f) = elem
-    def without(lst,i):
-        new_list = list(lst)
-        del new_list[i];
-        return tuple(new_list)
-    return {codomain_basis_ids[(without(ms,i),tuple_sum(f,ms[i]))]:(1 if i%2==0 else -1) for i in [0..(len(ms)-1)]}
-
-#some useful functions for displaying elements
-def format_monomial(elem):
-    var_names = ["x_{" + str(i) + "}" for i in [0..(len(elem)-1)]]
-    parts = [v + "^" + "{" + str(i) + "}" for (v,i) in zip(var_names,elem) if i!=0]
-    return ''.join(parts)
-
-#pretty print an element of the complex basis
-def format_basis(elem):
-    (ms,f) = elem
-    ms_list = list(ms)
-    ms_list.sort()
-    return '\wedge '.join(map(format_monomial,ms_list)) + "\otimes " + format_monomial(f)
-    
-
 def normalize_md(md):
     md_list = list(md)
     md_list.sort()
     return tuple(md_list)
 
+
+def wedge_part(n,d,p):
+    sd_basis = compute_basis(n,d);
+    def normalize_wedge(elem):
+        return tuple(sorted(elem))
+    return map(normalize_wedge,wedge_basis(p,sd_basis)); #for various boring reasons, we're going to just use the list
+
+#computes the image of a basis element, the returned value is a dict from basis elements in the codomain to a sign
+def compute_image(elem,codomain_basis_ids):
+    def without(lst,i):
+        new_list = list(lst)
+        del new_list[i]
+        return tuple(new_list)
+    return {codomain_basis_ids[without(elem,i)]:(1 if i%2==0 else -1) for i in [0..(len(elem)-1)]}
+
+
+#for some n,d,q, it returns (as indicies into the wedge basis) the applicable elements of the wedge basis
+def slice_multidegree(wedge_basis,n,d,q):
+    def wedge_multidegree(elem):
+        md = (0,)*(n+1)
+        for m in elem:
+            md = tuple_sum(md,m)
+        return md
+    ret = dict()
+    for (i,elem) in enumerate(wedge_basis):
+        wedge_md = wedge_multidegree(elem);
+        for f in compute_basis(n,q*d):
+            md = tuple_sum(wedge_md,f);
+            if md in ret:
+                ret[md].append(i);
+            else:
+                ret[md] = [i];
+    return ret
+
 #compute the rank of the \delta_p map in row q
 def compute_rank(n,d,p,q):
-    #an element of S_d is given by n integers (
-    domain_basis = bin_multidegrees(complex_basis(n,d,p,q))
-    codomain_basis = bin_multidegrees(complex_basis(n,d,p-1,q+1))
-    #for each multidegree compute the matrix
-    counts = dict();
-    ranks = dict();
-    for md in domain_basis:
+    #first compute the matrix on the basis of wedges
+    domain_basis = wedge_part(n,d,p)
+    codomain_basis = wedge_part(n,d,p-1)
+    codomain_basis_ids = {elem:n for (n,elem) in enumerate(codomain_basis)}
+    rows = map(lambda x : compute_image(x,codomain_basis_ids),domain_basis)
+
+    #for each multidegree, compute the rows/columns of the slice
+    #We don't actually need the codomain_slices part, it won't change the rank
+    #but using it reduces the size of the largest matricies
+    domain_slices = slice_multidegree(domain_basis,n,d,q)
+    codomain_slices = slice_multidegree(codomain_basis,n,d,q+1)
+
+    counts = dict()
+    ranks = dict()
+    for (md,curr_dom_slice) in domain_slices.iteritems():
         normalized = normalize_md(md)
+        if md not in codomain_slices:
+            continue;
+        curr_codom_slice = codomain_slices[md]
+
         if normalized in counts:
             counts[normalized]+=1
         else:
             counts[normalized]=1
-        if md!=normalized:
+        if normalized!=md:
             continue;
-        sub_domain_basis = domain_basis[md]
-        #safe to skip those where the codomain doesn't contain any of that multidegree
-        #this is needed to prevent crashes on certain edge cases
-        if md not in codomain_basis:
-            ranks[md]=0;
-            continue;
-
-        sub_codomain_basis = codomain_basis[md]
-        sub_codomain_ids = {elem:n for (n,elem) in enumerate(sub_codomain_basis)}
-        rows = map(lambda x : compute_image(x,sub_codomain_ids),sub_domain_basis)
         def check_image(domainId,codomainId):
-            if codomainId in rows[domainId]:
-                return rows[domainId][codomainId]
+            realDomainId = curr_dom_slice[domainId];
+            realCodomainId = curr_codom_slice[codomainId]
+            if realCodomainId in rows[realDomainId]:
+                return rows[realDomainId][realCodomainId]
             else:
                 return 0
-        #force it to just use linbox, since it usually won't be full rank
-        ranks[md] = matrix(ZZ,len(sub_domain_basis),len(sub_codomain_basis),check_image).rank(algorithm='linbox');
-        #print "M:",len(sub_domain_basis),"x",len(sub_codomain_basis)," rank ",ranks[md]
+
+        ranks[md] = matrix(ZZ,len(curr_dom_slice),len(curr_codom_slice),check_image).rank(algorithm='linbox')
+
     r=0
     for md in counts:
         r+=counts[md]*ranks[md]
     return r
 
-
+#computes a single betti number
 def compute_betti(n,d,p,q):
+    #if we can remove the call to .cardinality and compute the cardinality directly, we can remove the
+    #complex_basis function entirely
     ker_rank = complex_basis(n,d,p,q).cardinality() - compute_rank(n,d,p,q)
     img_rank = compute_rank(n,d,(p+1),q-1)
     return ker_rank-img_rank
