@@ -26,18 +26,6 @@ def complex_basis(n,d,p,q):
 def tuple_sum(a,b):
     return tuple([x+y for (x,y) in zip(a,b)])
 
-def multidegree(elem):
-    (ms,f) = elem
-    md = f
-    for m in ms:
-        md = tuple_sum(md,m)
-    return md
-
-def normalize_elem(elem):
-    (ms,f) = elem
-    ms_list = sorted(ms);
-    return (tuple(ms_list),f)
-
 def normalize_md(md):
     md_list = list(md)
     md_list.sort()
@@ -67,9 +55,10 @@ def slice_multidegree(wedge_basis,n,d,q):
             md = tuple_sum(md,m)
         return md
     ret = dict()
+    f_part = compute_basis(n,q*d)
     for (i,elem) in enumerate(wedge_basis):
         wedge_md = wedge_multidegree(elem);
-        for f in compute_basis(n,q*d):
+        for f in f_part:
             md = tuple_sum(wedge_md,f);
             if md in ret:
                 ret[md].append(i);
