@@ -1,5 +1,6 @@
 
 import operator
+from collections import defaultdict
 
 #we represent an element of S_d by a n-tuple of integers adding up to d
 #compute the basis for S_d
@@ -44,7 +45,7 @@ def compute_image(elem,codomain_basis_ids):
         new_list = list(lst)
         del new_list[i]
         return tuple(new_list)
-    return {codomain_basis_ids[without(elem,i)]:(1 if i%2==0 else -1) for i in [0..(len(elem)-1)]}
+    return {codomain_basis_ids[without(elem,i)]:(1 if i%2==0 else -1) for i in xrange(0,len(elem))}
 
 
 #for some n,d,q, it returns (as indicies into the wedge basis) the applicable elements of the wedge basis
@@ -54,20 +55,17 @@ def slice_multidegree(wedge_basis,n,d,q):
         for m in elem:
             md = tuple_sum(md,m)
         return md
-    ret = dict()
+    ret = defaultdict(list)
     f_part = compute_basis(n,q*d)
     for (i,elem) in enumerate(wedge_basis):
         wedge_md = wedge_multidegree(elem);
         for f in f_part:
             md = tuple_sum(wedge_md,f);
-            if md in ret:
-                ret[md].append(i);
-            else:
-                ret[md] = [i];
+            ret[md].append(i);
     return ret
 
-#compute the rank of the \delta_p map in row q
-def compute_rank(n,d,p,q):
+#returns a matrix in row dictionary form, along with with a map from mutlidegrees to slices (lists of rows and columns of the resulting matrix
+def construct_matrices(n,d,p,q):
     #first compute the matrix on the basis of wedges
     domain_basis = wedge_part(n,d,p)
     codomain_basis = wedge_part(n,d,p-1)
@@ -80,18 +78,16 @@ def compute_rank(n,d,p,q):
     domain_slices = slice_multidegree(domain_basis,n,d,q)
     codomain_slices = slice_multidegree(codomain_basis,n,d,q+1)
 
-    counts = dict()
-    ranks = dict()
-    for (md,curr_dom_slice) in domain_slices.iteritems():
-        normalized = normalize_md(md)
-        if md not in codomain_slices:
-            continue;
-        curr_codom_slice = codomain_slices[md]
+    return (rows,{md:(domain_slices[md],codomain_slices[md]) for md in domain_slices if md in codomain_slices})
 
-        if normalized in counts:
-            counts[normalized]+=1
-        else:
-            counts[normalized]=1
+#compute the rank using data in the format returned by construct_matricies
+def compute_rank(rows,slices):
+    counts = defaultdict(int)
+    ranks = dict()
+    for (md,(curr_dom_slice,curr_codom_slice)) in slices.iteritems():
+        normalized = normalize_md(md)
+        counts[normalized]+=1
+
         if normalized!=md:
             continue;
         def check_image(domainId,codomainId):
@@ -102,7 +98,7 @@ def compute_rank(n,d,p,q):
             else:
                 return 0
 
-        ranks[md] = matrix(ZZ,len(curr_dom_slice),len(curr_codom_slice),check_image).rank(algorithm='linbox')
+        ranks[md] = matrix(ZZ,len(curr_dom_slice),len(curr_codom_slice),check_image).rank()
 
     r=0
     for md in counts:
@@ -113,8 +109,8 @@ def compute_rank(n,d,p,q):
 def compute_betti(n,d,p,q):
     #if we can remove the call to .cardinality and compute the cardinality directly, we can remove the
     #complex_basis function entirely
-    ker_rank = complex_basis(n,d,p,q).cardinality() - compute_rank(n,d,p,q)
-    img_rank = compute_rank(n,d,(p+1),q-1)
+    ker_rank = complex_basis(n,d,p,q).cardinality() - compute_rank(*construct_matrices(n,d,p,q))
+    img_rank = compute_rank(*construct_matrices(n,d,(p+1),q-1))
     return ker_rank-img_rank
 
 #test code
