@@ -1,6 +1,7 @@
 
 import operator
 from collections import defaultdict
+import sys
 
 #we represent an element of S_d by a n-tuple of integers adding up to d
 #compute the basis for S_d
@@ -79,6 +80,55 @@ def construct_matrices(n,d,p,q):
     codomain_slices = slice_multidegree(codomain_basis,n,d,q+1)
 
     return (rows,{md:(domain_slices[md],codomain_slices[md]) for md in domain_slices if md in codomain_slices})
+
+#prints a space separated list
+def print_list(outStream,lst):
+    for val in lst:
+        outStream.write(str(val) + " ");
+    outStream.write("\n")
+
+#the format used is as follows
+#<nrows> <nslices>
+#<rows>
+#<slices>
+#
+#where <rows> is represented as follows
+#<col>,<val> <col>,<val> ....
+#note, no effort will be made to ensure that the col are in increasing order
+#
+#where <slices> is represented as follows
+#<multidegree>
+#<rowid> <rowid> ...
+#<colid> <colid> ...
+#
+def print_matrices(outStream,rows,slices):
+    outStream.write('%d %d\n' % (len(rows),len(slices)))
+    for row in rows:
+        for (col,val) in row.iteritems():
+            outStream.write('%d,%d ' % (col,val))
+        outStream.write('\n')
+    for (md,(dom_slice,codom_slice)) in slices.iteritems():
+        outStream.write(str(md) + "\n")
+        print_list(outStream,dom_slice)
+        print_list(outStream,codom_slice)
+
+def read_list(inStream):
+    return inStream.readline().split();
+
+#undoes print_matricies
+def read_matrices(inStream):
+    nrows,nslices = map(int,inStream.readline().split())
+    rows = [dict()]*nrows
+    for i in range(0,nrows):
+        entries = read_list(inStream)
+        rows[i]=dict(map(lambda s : map(int,s.split(',')),entries))
+    slices = dict()
+    for i in range(0,nslices):
+        md = tuple(map(int,inStream.readline().strip()[1:-1].split(',')))
+        dom_slice = map(int,read_list(inStream));
+        codom_slice = map(int,read_list(inStream));
+        slices[md] = (dom_slice,codom_slice)
+    return (rows,slices)
 
 #compute the rank using data in the format returned by construct_matricies
 def compute_rank(rows,slices):
