@@ -128,13 +128,14 @@ def slice_multidegree(wedge_multidegrees,n,d,q):
             ret[md].extend(indicies);
     return ret
 
-#returns a matrix in row dictionary form, along with with a map from mutlidegrees to slices (lists of rows and columns of the resulting matrix
-def construct_matrices(n,d,p,q):
+#returns a bunch of iterators and thunks instead of the actual contents, this is useful for printing the
+#matricies without using too much memory
+def lazy_construct_matrices(n,d,p,q):
     #first compute the matrix on the basis of wedges
     domain_basis = wedge_part(n,d,p)
     codomain_basis = wedge_part(n,d,p-1)
 
-    rows = map(lambda x : compute_image(x,codomain_basis),domain_basis)
+    rows = (compute_image(x,codomain_basis) for x in domain_basis)
 
     #instead of constructing slices directly, group the rows and columns by multidegree
     def wedge_multidegree(elem):
@@ -148,9 +149,14 @@ def construct_matrices(n,d,p,q):
             md = wedge_multidegree(elem)
             ret[md].append(k)
         return ret
-    domain_mds = group_basis(domain_basis)
-    codomain_mds = group_basis(codomain_basis)
-    return (rows,domain_mds,codomain_mds)
+    domain_mds = lambda : group_basis(domain_basis)
+    codomain_mds = lambda : group_basis(codomain_basis)
+    return ((rows,len(domain_basis)),domain_mds,codomain_mds)
+
+#returns a matrix in row dictionary form, along with with a map from mutlidegrees to slices (lists of rows and columns of the resulting matrix
+def construct_matrices(n,d,p,q):
+    ((rowiter,nrows),domain_mds_thunk,codomain_mds_thunk) = lazy_construct_matrices(n,d,p,q);
+    return (list(rowiter),domain_mds_thunk(),codomain_mds_thunk())
 
 #prints a space separated list
 def print_list(outStream,lst):
@@ -159,9 +165,11 @@ def print_list(outStream,lst):
     outStream.write("\n")
 
 #the format used is as follows
-#<nrows> <ndom_mds> <ncodom_mds>
+#<nrows>
 #<rows>
+#<ndom_mds>
 #<domain multidegrees>
+#<ncodom_mds>
 #<codomain multidegrees>
 #
 #where <rows> is represented as follows
@@ -171,26 +179,33 @@ def print_list(outStream,lst):
 #where each of the multidegree parts are represented by
 #<multidegree>: <row/col id> <row/col id> ...
 
-def print_matrices(outStream,rows,domain_mds,codomain_mds):
-    print_list(outStream,[len(rows),len(domain_mds),len(codomain_mds)])
+def print_matrices(outStream,row_info,domain_mds_thunk,codomain_mds_thunk):
+    (rows,nrows) = row_info
+    outStream.write('%d\n' % nrows)
+    old_thing = None
     for row in rows:
         for (col,val) in row.iteritems():
             outStream.write('%d,%d ' % (col,val))
         outStream.write('\n')
-
-    for (md,rows) in domain_mds.iteritems():
+    del rows
+    domain_mds = domain_mds_thunk();
+    outStream.write('%d\n' % len(domain_mds))
+    for (md,elems) in domain_mds.iteritems():
         outStream.write(str(md) + ": ")
-        print_list(outStream,rows)
-    for (md,cols) in codomain_mds.iteritems():
+        print_list(outStream,elems)
+    del domain_mds
+    codomain_mds = codomain_mds_thunk();
+    outStream.write('%d\n' % len(codomain_mds))
+    for (md,elems) in codomain_mds.iteritems():
         outStream.write(str(md) + ": ")
-        print_list(outStream,cols)
+        print_list(outStream,elems)
 
 def read_list(inStream):
     return inStream.readline().split();
 
 #undoes print_matricies
 def read_matrices(inStream):
-    nrows,ndom_mds,ncodom_mds = map(int,read_list(inStream))
+    nrows = int(inStream.readline())
     rows = [dict()]*nrows
     for i in range(0,nrows):
         entries = read_list(inStream)
@@ -203,9 +218,11 @@ def read_matrices(inStream):
         md = tuple(map(int,mdstr.strip()[1:-1].split(',')))
         ids = map(int,idstr.split())
         return (md,ids)
+    ndom_mds = int(inStream.readline())
     for i in range(0,ndom_mds):
         md,ids = read_multidegree_list();
         domain_mds[md]=ids
+    ncodom_mds = int(inStream.readline())
     for i in range(0,ncodom_mds):
         md,ids = read_multidegree_list();
         codomain_mds[md]=ids

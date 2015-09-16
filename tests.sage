@@ -37,9 +37,13 @@ print compute_betti(2,3,7,2)
 
 
 with open("test.txt",'w') as f:
-    print_matrices(f,*construct_matrices(2,3,5,1))
+    print_matrices(f,*lazy_construct_matrices(2,3,5,1))
 
 with open("test.txt",'r') as f:
-    print compute_rank(*read_matrices(f))
+    print compute_rank(2,3,5,1,*read_matrices(f))
 
-print compute_rank(*construct_matrices(2,3,5,1))
+print compute_rank(2,3,5,1,*construct_matrices(2,3,5,1))
+
+#WARNING this test creates a ~40Mb file
+with open("big_test.txt",'w') as f:
+    print_matrices(f,*lazy_construct_matrices(2,5,10,1))
