@@ -1,5 +1,16 @@
 load("syzygy.sage")
 
+print list(OrderedSubsets([0,1,2,3,4,5],2))
+test = list()
+test2 = OrderedSubsets([0,1,2,3,4,5],2)
+for i in range(0,len(test2)):
+    test.append(test2[i])
+print test
+
+for (i,elem) in enumerate(test2):
+    print i," ",test2.rank(elem)
+
+
 print compute_betti(2,2,2,0)
 print compute_betti(2,2,3,1)
 print compute_betti(2,2,2,1)

@@ -41,6 +41,15 @@ def wedge_part(n,d,p):
     sd_basis = compute_basis(n,d);
     return OrderedSubsets(sd_basis,p)
 
+#note, we implement our own binom since sage's version does something weird that kills our memory usage
+def binom(n,k):
+    val = 1
+    for i in range(0,k):
+        val*=n-i
+    for i in range(1,k+1):
+        val/=i
+    return val
+
 #implements the set of subsets of size k, but instead of returning sets, return ordered tuples
 class OrderedSubsets:
     def __init__(self,base_set,k):
@@ -52,15 +61,20 @@ class OrderedSubsets:
             self.base_dict = {elem:n for (n,elem) in enumerate(self.base_list)}
         self.k = k
         self.n = len(self.base_list)
+        self.__binom_cache = dict()
+    def __cached_binom(self,n,k):
+        if (n,k) not in self.__binom_cache:
+            self.__binom_cache[(n,k)] = binom(n,k)
+        return self.__binom_cache[(n,k)]
     def __len__(self):
-        return int(binomial(self.n,self.k))
+        return int(self.__cached_binom(self.n,self.k))
     def rank(self,subset):
-        indicies = map(lambda x : self.base_dict[x],subset)
+        indicies = [self.base_dict[x] for x in subset]
         ret = 0
         prev = -1
         for j in range(0,self.k):
             for i in range(prev+1,indicies[j]):
-                ret += binomial(self.n-i-1,self.k-j-1)
+                ret += self.__cached_binom(self.n-i-1,self.k-j-1)
             prev = indicies[j]
         return ret
     def __as_elements(self,indicies):
@@ -71,7 +85,7 @@ class OrderedSubsets:
         curr_idx = 0
         for j in range(0,self.k):
             for i in range(prev+1,self.n):
-                c = binomial(self.n-i-1,self.k-j-1)
+                c = self.__cached_binom(self.n-i-1,self.k-j-1)
                 if curr_idx+c>idx:
                     ret[j]=i
                     prev = i
