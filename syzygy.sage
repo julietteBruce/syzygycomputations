@@ -27,7 +27,7 @@ def complex_basis(n,d,p,q):
     return tensor_basis(wedge_basis(p,sd_basis),sqd_basis)
 
 def tuple_sum(a,b):
-    return tuple([x+y for (x,y) in zip(a,b)])
+    return tuple(map(operator.add,a,b))
 
 def normalize_md(md):
     md_list = list(md)
@@ -62,20 +62,31 @@ class OrderedSubsets:
         self.k = k
         self.n = len(self.base_list)
         self.__binom_cache = dict()
+        self.__sum_cache = dict()
     def __cached_binom(self,n,k):
         if (n,k) not in self.__binom_cache:
             self.__binom_cache[(n,k)] = binom(n,k)
         return self.__binom_cache[(n,k)]
+    #this is a cached count of the sum of how many k element subsets with entries between i and n (exclusive)
+    #where i ranges from start to stop
+    def __cached_sum(self,start,stop,k):
+        try:
+            return self.__sum_cache[(start,stop,k)]
+        except KeyError:
+            if start>=stop:
+                self.__sum_cache[(start,stop,k)]=0
+            else:
+                self.__sum_cache[(start,stop,k)]=self.__cached_sum(start,stop-1,k)+self.__cached_binom(self.n-(stop-1)-1,k)
+            return self.__sum_cache[(start,stop,k)]
     def __len__(self):
         return int(self.__cached_binom(self.n,self.k))
     def rank(self,subset):
         indicies = [self.base_dict[x] for x in subset]
         ret = 0
         prev = -1
-        for j in range(0,self.k):
-            for i in range(prev+1,indicies[j]):
-                ret += self.__cached_binom(self.n-i-1,self.k-j-1)
-            prev = indicies[j]
+        for (j,idx) in enumerate(indicies):
+            ret += self.__cached_sum(prev+1,idx,self.k-j-1)
+            prev = idx
         return ret
     def __as_elements(self,indicies):
         return tuple(map(lambda i : self.base_list[i],indicies))
@@ -93,16 +104,18 @@ class OrderedSubsets:
                 curr_idx+=c
         return self.__as_elements(ret)
     def __iter__(self):
-        final_elem = list(range(self.n-self.k,self.n))
+        n = self.n
+        k = self.k
+        final_elem = [(n-k)..(n-1)]
         def next_elem(curr):
-            for i in range(1,self.k+1):
-                if curr[-i]!=self.n-i:
+            for i in range(1,k+1):
+                if curr[-i]!=n-i:
                     break;
             curr[-i] +=1; #advance an entry
             for j in range(1,i):
                 curr[-j]=curr[-i]+(i-j)
         def gen():
-            curr = list(range(0,self.k))
+            curr = [0..k]
             yield self.__as_elements(curr)
             while curr!=final_elem:
                 next_elem(curr)
