@@ -71,48 +71,10 @@ public:
         subBasis = new SubBasis(*codomainBasis,_md);
     }
 
-    /*
-    void runListeners(){
-        vector<function<void(long long, vector<long long>)> > real_listeners;
-        vector<vector<int> > mds;
-        //create listeners that listen to the unmodified line
-        //using subbasis converters
-        for(auto elem : listeners){
-            auto md = elem.first;
-            mds.push_back(md);
-            auto callback = elem.second;
-            auto sub_basis = SubBasis(*codomainBasis,md);
-            real_listeners.push_back([sub_basis,callback](long long rowNum,vector<long long> line){
-                    std::vector<long long> mapped_line(line.size());
-                    transform(line.begin(),line.end(),mapped_line.begin(),
-                              [&sub_basis](long long x) -> long long {return sub_basis.convert_rank(x);});
-                    callback(rowNum,mapped_line);
-                });
-        }
-
-        auto rowIter = domainBasis->getIter();
-        vector<int> rowIndicies(real_listeners.size());
-
-        for(size_t i=0;i<nrows;i++){
-            vector<int> rowMd = domainBasis->multidegree(rowIter.getCurr());
-            rowIter.next();
-            string str;
-            getline(f,str);
-            //parse a line, loads of fun
-            std::vector<long long> line(p);
-            for(size_t i=0;i<p;i++){
-                size_t idx=0;
-                line[i] = stoll(str,&idx);
-                str = str.substr(idx+1);
-            }
-            //now feed it to the listeners
-            for(size_t j=0;j<real_listeners.size();j++){
-                if(is_below(rowMd,mds[j]))
-                    real_listeners[j](rowIndicies[j]++,line);
-            }
-        }
+    bool hasRows(){
+        return !subBasis || subBasis->size()!=0;
     }
-    */
+
 private:
     WedgeBasis *domainBasis,*codomainBasis;
     SubBasis *subBasis;
@@ -123,15 +85,25 @@ private:
 };
 
 //output something matlab can understand
-void formatOutputMatlab(FILE *out, RowSource& source){
+void formatOutputMatlab(const char* filename, RowSource& source){
     long long rowNum = 1;//mathlab 1 indexes
     vector<long long> row(source.getP());
+    FILE *out = NULL;
     while(source.nextRow(row)){
+        if(!out){
+            out = fopen(filename,"w");
+            if(!out){
+                printf("error opening output file %s\n",filename);
+                return;
+            }
+        }
         for(int i=0;i<row.size();i++){
             fprintf(out,"%lld %lld\t%d\n",rowNum ,row[i]+1, i%2 ? -1 : 1);
         }
         ++rowNum;
     }
+    if(out)
+        fclose(out);
 }
 
 int main(int argc, char ** argv){
@@ -149,18 +121,27 @@ int main(int argc, char ** argv){
     mkdir(directory.c_str(),S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
     int totalDegree=source.getD()*source.getP()+source.getD()*q;
     vector<vector<int> > allMds(createIntegerVectors(source.getN(),totalDegree));
-    for(auto md : allMds){
+    for(const vector<int>& md : allMds){
+        bool skip = false;
+        for(size_t i=0;i<md.size()-1;i++){
+            if(md[i]>md[i+1]){
+                skip = true;
+                break;
+            }
+        }
+        if(skip)
+            continue;
         RowSource realSource(argv[1]);
         realSource.setMultidegree(md);
-        stringstream name;
-        name << directory << "/";
-        name << "multidegree";
-        for(int x : md)
-            name  << "_" << x;
-        name << ".dat";
-        FILE *output = fopen(name.str().c_str(),"w");
-        formatOutputMatlab(output,realSource);
-        fclose(output);
+        if(realSource.hasRows()){
+            stringstream name;
+            name << directory << "/";
+            name << "multidegree";
+            for(int x : md)
+                name  << "_" << x;
+            name << ".dat";
+            formatOutputMatlab(name.str().c_str(),realSource);
+        }
     }
 
 

@@ -70,6 +70,9 @@ class SubBasis{
 public:
     SubBasis(const WedgeBasis& parent,const std::vector<int>& md);
     long long convert_rank(long long old_rank) const;
+    inline long long size() const{
+        return mdMap.size();
+    }
 private:
     const std::vector<int> maxMultidegree;
     std::map<long long,long long> mdMap;
