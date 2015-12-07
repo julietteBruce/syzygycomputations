@@ -107,18 +107,15 @@ void formatOutputMatlab(const char* filename, RowSource& source){
 }
 
 int main(int argc, char ** argv){
-    if(argc<3){
+    if(argc<4){
         printf("Not enough arguments\n");
         return -1;
     }
 
     RowSource source(argv[1]);
     int q = atoi(argv[2]);
-    char * end = strrchr(argv[1],'.');
-    string directory(argv[1],end-argv[1]);
-    directory += "_";
-    directory += argv[2];
-    mkdir(directory.c_str(),S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+    string directory(argv[3]);
+    mkdir(argv[3],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
     int totalDegree=source.getD()*source.getP()+source.getD()*q;
     vector<vector<int> > allMds(createIntegerVectors(source.getN(),totalDegree));
     for(const vector<int>& md : allMds){
