@@ -4,9 +4,9 @@ import os
 import os.path
 import cmd
 import ast
-import subprocess
 import traceback
 import re
+from rank_backends import *
 
 #given a folder with all the matricies in it, produce a folder with the relevant ranks, and then the relevant betti table entries
 
@@ -50,7 +50,7 @@ class BettiTableState(object):
     one is for a directory containing all the entries,
     the second is a for a file to output all the ranks into
     """
-    def __init__(self,path,rank_prog):
+    def __init__(self,path,rank_backend):
         info_path = os.path.join(path,'info.txt')
         self.__path = path
         self.__matrix_dir = os.path.join(path,'matricies');
@@ -67,7 +67,7 @@ class BettiTableState(object):
             self.__N = int(nstr)
             self.__D = int(dstr)
         #Note, table.txt is not loaded since we use that only as output
-        self.__rank_prog = rank_prog
+        self.__rank_backend = rank_backend
 
         self.__max_q = self.__N
         self.__max_p = binom(self.__D+self.__N,self.__N)
@@ -84,9 +84,8 @@ class BettiTableState(object):
             return 0
         base_name = "map_{}_{}".format(p,q)
         if not os.path.exists(os.path.join(self.__ranks_dir,base_name + ".txt")):
-            subprocess.check_call([self.__rank_prog,
-                                   os.path.join(self.__matrix_dir,base_name),
-                                   os.path.join(self.__ranks_dir,base_name+".txt")])
+            self.__rank_backend.compute_ranks(os.path.join(self.__matrix_dir,base_name),
+                                              os.path.join(self.__ranks_dir,base_name+".txt"))
         return self.lookup_rank(p,q)
     def lookup_rank(self,p,q):
         if p<=0 or q<0 or p>self.__max_p or q>self.__max_q:
@@ -129,15 +128,6 @@ class BettiTableState(object):
         return ker_size-img_size
 
 
-argparser = argparse.ArgumentParser();
-
-argparser.add_argument('path')
-argparser.add_argument('--rank-cmd')
-
-args = argparser.parse_args()
-state = BettiTableState(args.path,args.rank_cmd)
-
-
 class BettiCmd(cmd.Cmd):
     def __init__(self,state):
         super(BettiCmd,self).__init__()
@@ -177,6 +167,28 @@ class BettiCmd(cmd.Cmd):
         return True
     def emptyline(self):
         return self.do_help("")
+
+argparser = argparse.ArgumentParser();
+
+argparser.add_argument('path')
+argparser.add_argument('--rank-backend')
+
+args = argparser.parse_args()
+backend = None
+if args.rank_backend=="sage":
+    backend = SageBackend()
+elif args.rank_backend=="matlab-qr":
+    backend = MatlabQRBackend()
+elif args.rank_backend=="matlab-lu":
+    backend = MatlabLUBackend()
+elif args.rank_backend==None:
+    print("No backend specified, using sage as a default");
+    backend = SageBackend()
+else:
+    print("unrecognized backend '{}'\n".format(args.rank_backend));
+    exit(1)
+
+state = BettiTableState(args.path,backend)
 
 command = BettiCmd(state)
 command.cmdloop()
