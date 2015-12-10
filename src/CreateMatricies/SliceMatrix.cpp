@@ -24,7 +24,7 @@ using namespace std;
 
 class RowSource{
 public:
-    RowSource (const char* file) : subBasis(NULL),md(NULL),f(file){
+    RowSource (const char* file) : done(false),subBasis(NULL),md(NULL),f(file){
         f >> n >> d >> p;
         f >> ws;
         domainBasis = new WedgeBasis(n,d,p);
@@ -43,17 +43,18 @@ public:
     inline int getN() const {return n;};
     inline int getD() const {return d;};
     inline int getP() const {return p;};
+    //returns true if there was a next row to look at. i.e. returns true if
+    //the new contents of row are valid
     bool nextRow(vector<long long>& row){
         vector<int> rowMd;
         string str;
-        bool ret = true;
         do{
-            if(!ret)
-                return ret;
+            if(done)
+                return false;
             rowMd = domainBasis->multidegree(rowIter->getCurr());
             getline(f,str);
             if(!rowIter->next())
-                ret = false;
+                done = true;
         }while(md && !is_below(rowMd,*md));
         //parse a line, loads of fun
         for(int i=0;i<p;i++){
@@ -63,7 +64,7 @@ public:
                 row[i] = subBasis->convert_rank(row[i]);
             str = str.substr(idx+1);
         }
-        return ret;
+        return true;
     }
 
     void setMultidegree(const vector<int>& _md){
@@ -76,6 +77,7 @@ public:
     }
 
 private:
+    bool done;
     WedgeBasis *domainBasis,*codomainBasis;
     SubBasis *subBasis;
     vector<int> *md;
