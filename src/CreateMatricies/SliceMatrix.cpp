@@ -89,9 +89,7 @@ void formatOutputMatlab(const char* filename, RowSource& source){
     long long rowNum = 1;//mathlab 1 indexes
     vector<long long> row(source.getP());
     FILE *out = NULL;
-    bool hasRows = true;
-    while(hasRows){
-        hasRows = source.nextRow(row);
+    while(source.nextRow(row)){
         if(!out){
             out = fopen(filename,"w");
             if(!out){

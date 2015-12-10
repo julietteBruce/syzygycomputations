@@ -15,8 +15,8 @@ static T binom(T n, T k){
 
 
 /*
-  An integer vector of length m with the entries summing to d is equivalent to a
-  choice of m numbers between 0 and d, namely the partial sums. In particular,
+  An integer vector of length with the entries summing to d is equivalent to a
+  choice of n numbers between 0 and d, namely the partial sums. In particular,
   to iterate over all integers vectors we instead iterate over the partial sums
   then to reconstruct the integer vector from the partial sums
  */
