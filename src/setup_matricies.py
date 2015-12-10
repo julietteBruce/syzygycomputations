@@ -27,7 +27,7 @@ if not os.path.isdir(matrix_dir):
     os.makedirs(matrix_dir)
 
 #note binom(d+n,d) is the dimension of S_d, and there is no matrix after that
-for p in range(1, binom(d+n,n)):
+for p in range(1, binom(d+n,n)+1):
     with tempfile.NamedTemporaryFile() as temp:
         subprocess.check_call(["./build/ConstructMatricies",args.n,args.d,str(p)],stdout=temp)
         for q in range(0,n+1):

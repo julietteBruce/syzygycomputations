@@ -67,6 +67,10 @@ class BettiTableState(object):
             self.__D = int(dstr)
         #Note, table.txt is not loaded since we use that only as output
         self.__rank_prog = rank_prog
+
+        self.__max_q = self.__N
+        self.__max_p = binom(self.__D+self.__N,self.__N)
+
     #deletes all of the relevant ranks
     def clean(self):
         files = os.listdir(self.__ranks_dir);
@@ -75,7 +79,7 @@ class BettiTableState(object):
         if os.path.exists(os.path.join(self.__path,'table.txt')):
             os.remove(os.path.join(self.__path,'table.txt'))
     def compute_rank(self,p,q):
-        if p<0:
+        if p<=0 or q<0 or p>self.__max_p or q>self.__max_q:
             return 0
         base_name = "map_{}_{}".format(p,q)
         if not os.path.exists(os.path.join(self.__ranks_dir,base_name + ".txt")):
@@ -84,7 +88,7 @@ class BettiTableState(object):
                                    os.path.join(self.__ranks_dir,base_name+".txt")])
         return self.lookup_rank(p,q)
     def lookup_rank(self,p,q):
-        if p<0:
+        if p<=0 or q<0 or p>self.__max_p or q>self.__max_q:
             return 0
         base_name = os.path.join(self.__ranks_dir,"map_{}_{}".format(p,q))
         if os.path.exists(base_name + ".txt"):
@@ -106,13 +110,13 @@ class BettiTableState(object):
         basis_size = binom(binom(self.__D+self.__N,self.__N),p)*binom(self.__D*q+self.__N,self.__N);
         ker_rank = basis_size - self.compute_rank(p,q)
         img_rank = self.compute_rank(p+1,q-1)
-        print(ker_rank)
-        print(img_rank)
         return ker_rank-img_rank
-    #note this will not actually compute anything, instead it simply infers what it can from the current data
-    def print_betti_table(self):
-        pass
-    def lookup_entry(self,p,q):
+    #TODO reduce the copy-paste between versions
+    def get_betti_table(self):
+        return [[self.get_betti_entry(p,q) for p in range(0,self.__max_p+1)] for q in range(0,self.__max_q+1)]
+    def lookup_betti_table(self):
+        return [[self.lookup_betti_entry(p,q) for p in range(0,self.__max_p+1)] for q in range(0,self.__max_q+1)]
+    def lookup_betti_entry(self,p,q):
         basis_size = binom(binom(self.__D+self.__N,self.__N),p)*binom(self.__D*q+self.__N,self.__N);
         outwards_rank = self.lookup_rank(p,q)
         if outwards_rank==None:
@@ -142,11 +146,10 @@ class BettiCmd(cmd.Cmd):
         """print the betti table"""
         argv = args.split()
         if len(argv)==0:
-            self.__state.print_betti_table()
+            print(self.__state.lookup_betti_table())
         elif len(argv)==2:
             p,q = map(int,argv)
-            print(self.__state.lookup_entry(p,q))
-            ##TODO something
+            print(self.__state.lookup_betti_entry(p,q))
         else:
             print("print expects either zero or two integers as arguments")
         return False
@@ -155,7 +158,7 @@ class BettiCmd(cmd.Cmd):
         try:
             argv = args.split()
             if len(argv)==0:
-                pass #TODO compute all of them
+                print(self.__state.get_betti_table())
             elif len(argv)==2:
                 p,q = map(int,argv)
                 print(self.__state.get_betti_entry(p,q))
@@ -165,9 +168,11 @@ class BettiCmd(cmd.Cmd):
             traceback.print_exc()
         return False
     def do_clean(self,args):
+        """cleans all cached rank information"""
         self.__state.clean()
         return False
     def do_exit(self,args):
+        """quits the program"""
         return True
     def emptyline(self):
         return self.do_help("")
