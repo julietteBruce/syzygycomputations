@@ -1,0 +1,6 @@
+executable = final_qr.m
+log = single_entry.log
+
+universe       = vanilla
+
+queue input matching files something/*.dat`
