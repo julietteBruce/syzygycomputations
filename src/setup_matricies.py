@@ -15,27 +15,36 @@ def binom(n,k):
 
 argparser = argparse.ArgumentParser();
 argparser.add_argument('output_dir')
-argparser.add_argument('n')
-argparser.add_argument('d')
-
+argparser.add_argument('n',type = int)
+argparser.add_argument('d',type = int)
+argparser.add_argument('--entry',dest='entries',help='which entries to construct matricies for',nargs=2,action='append',type=int,default=[])
 args = argparser.parse_args()
 
-d=int(args.d)
-n=int(args.n)
+d=args.d
+n=args.n
+
+entries_set = set(map(tuple,args.entries))
+if len(args.entries)!=0:
+    p_set = {p for (p,q) in args.entries if p<=binom(d+n,n)}
+    p_set |= {p+1 for p in p_set if p+1<=binom(d+n,n)}
+    print p_set;
+else:
+    p_set = set(range(1, binom(d+n,n)+1));
 
 matrix_dir = os.path.join(args.output_dir,"matricies")
 if not os.path.isdir(matrix_dir):
     os.makedirs(matrix_dir)
 
 #note binom(d+n,d) is the dimension of S_d, and there is no matrix after that
-for p in range(1, binom(d+n,n)+1):
+for p in p_set :
     with tempfile.NamedTemporaryFile() as temp:
-        subprocess.check_call(["./build/ConstructMatricies",args.n,args.d,str(p)],stdout=temp)
+        subprocess.check_call(["./build/ConstructMatricies",str(args.n),str(args.d),str(p)],stdout=temp)
         for q in range(0,n+1):
-            curr_dir=os.path.join(matrix_dir,"map_{}_{}".format(p,q))
-            if not os.path.isdir(curr_dir):
-                os.makedirs(curr_dir);
-            subprocess.check_call(["./build/SliceMatrix",temp.name,str(q),curr_dir])
+            if ((p,q) in entries_set) or ((p-1,q+1) in entries_set) or (len(entries_set)==0):
+                curr_dir=os.path.join(matrix_dir,"map_{}_{}".format(p,q))
+                if not os.path.isdir(curr_dir):
+                    os.makedirs(curr_dir);
+                    subprocess.check_call(["./build/SliceMatrix",temp.name,str(q),curr_dir])
 
 with open(os.path.join(args.output_dir,"info.txt"),"w") as info_file:
     info_file.write("{} {}".format(n,d));
