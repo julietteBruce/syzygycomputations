@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cstring>
+#include <set>
 
 #include <sys/stat.h>
 
@@ -24,19 +25,16 @@ using namespace std;
 
 class RowSource{
 public:
-    RowSource (const char* file) : done(false),subBasis(NULL),md(NULL),f(file){
+    RowSource (const char* file) : done(false),md(NULL),f(file){
         f >> n >> d >> p;
         f >> ws;
         domainBasis = new WedgeBasis(n,d,p);
-        codomainBasis = new WedgeBasis(n,d,p-1);
         rowIter = new WedgeBasisIterator(domainBasis->getIter());
+        rowMd.resize(n+1);
     }
     ~RowSource(){
         delete rowIter;
-        delete codomainBasis;
         delete domainBasis;
-        if(subBasis)
-            delete subBasis;
         if(md)
             delete md;
     }
@@ -46,22 +44,25 @@ public:
     //returns true if there was a next row to look at. i.e. returns true if
     //the new contents of row are valid
     bool nextRow(vector<long long>& row){
-        vector<int> rowMd;
+        //vector<int> rowMd(n+1);
         string str;
+        bool first = true;
         do{
             if(done)
                 return false;
-            rowMd = domainBasis->multidegree(rowIter->getCurr());
-            getline(f,str);
+            domainBasis->multidegree(rowIter->getCurr(),rowMd);
+            if(first)
+                first = false;
+            else
+                f.ignore(numeric_limits<streamsize>::max(),'\n');//getline(f,str);
             if(!rowIter->next())
                 done = true;
         }while(md && !is_below(rowMd,*md));
+        getline(f,str);
         //parse a line, loads of fun
         for(int i=0;i<p;i++){
             size_t idx=0;
             row[i] = stoll(str,&idx);
-            if(subBasis)
-                row[i] = subBasis->convert_rank(row[i]);
             str = str.substr(idx+1);
         }
         return true;
@@ -69,18 +70,13 @@ public:
 
     void setMultidegree(const vector<int>& _md){
         md = new vector<int>(_md);
-        subBasis = new SubBasis(*codomainBasis,_md);
-    }
-
-    bool hasRows(){
-        return !subBasis || subBasis->size()!=0;
     }
 
 private:
     bool done;
-    WedgeBasis *domainBasis,*codomainBasis;
-    SubBasis *subBasis;
+    WedgeBasis *domainBasis;
     vector<int> *md;
+    vector<int> rowMd;
     WedgeBasisIterator *rowIter;
     int n,d,p;
     ifstream f;
@@ -118,29 +114,42 @@ int main(int argc, char ** argv){
     int q = atoi(argv[2]);
     string directory(argv[3]);
     mkdir(argv[3],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
-    int totalDegree=source.getD()*source.getP()+source.getD()*q;
-    vector<vector<int> > allMds(createIntegerVectors(source.getN(),totalDegree));
-    for(const vector<int>& md : allMds){
-        bool skip = false;
-        for(size_t i=0;i<md.size()-1;i++){
-            if(md[i]>md[i+1]){
-                skip = true;
-                break;
+    set<vector<int> > allMds;
+    WedgeBasis domainBasis(source.getN(),source.getD(),source.getP());
+    WedgeBasisIterator domainIter = domainBasis.getIter();
+    vector<vector<int> > otherMds(createIntegerVectors(source.getN(),source.getD()*q));
+    //something +source.getD()*q
+    do{
+        vector<int> firstMd(domainBasis.multidegree(domainIter.getCurr()));
+        for(vector<int> secondMd : otherMds){
+            vector<int> md(firstMd);
+            for(int i=0;i<secondMd.size();i++)
+                md[i] += secondMd[i];
+            int s = 0;
+            for(int i=0;i<md.size();i++)
+                s+=md[i];
+            bool skip = false;
+            for(size_t i=0;i<md.size()-1;i++){
+                if(md[i]>md[i+1]){
+                    skip = true;
+                    break;
+                }
             }
+            if(!skip)
+                allMds.insert(md);
         }
-        if(skip)
-            continue;
+    }while(domainIter.next());
+
+    for(const vector<int>& md : allMds){
         RowSource realSource(argv[1]);
         realSource.setMultidegree(md);
-        if(realSource.hasRows()){
-            stringstream name;
-            name << directory << "/";
-            name << "multidegree";
-            for(int x : md)
-                name  << "_" << x;
-            name << ".dat";
-            formatOutputMatlab(name.str().c_str(),realSource);
-        }
+        stringstream name;
+        name << directory << "/";
+        name << "multidegree";
+        for(int x : md)
+            name  << "_" << x;
+        name << ".dat";
+        formatOutputMatlab(name.str().c_str(),realSource);
     }
 
 

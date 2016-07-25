@@ -40,6 +40,15 @@ vector<int> WedgeBasis::multidegree(const basis_elem_t& elem) const{
     return ret;
 }
 
+void WedgeBasis::multidegree(const basis_elem_t& elem, vector<int>& ret) const{
+    for(int i=0;i<n+1;i++)
+        ret[i]=0;
+    for(int e : elem){
+        for(int i=0;i<n+1;i++)
+            ret[i]+=values[e][i];
+    }
+}
+
 //the <long long> on the binom should really be automatic, but for some reason I get linking errors if I don't
 //specify
 WedgeBasis::WedgeBasis(int _n, int _d, int _p) : n(_n), d(_d), p(_p), N(binom<long long>(n+d,n)), values(createIntegerVectors(n,d)),sumCache(N+1),binomCache(N+1){

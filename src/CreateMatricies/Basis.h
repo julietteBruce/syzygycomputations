@@ -10,27 +10,33 @@ long long binom(long long,long long);
 //complicated for our purposes
 class WedgeBasisIterator{
 public:
-    WedgeBasisIterator(long long _N, int k) : N(_N), curr(k) {
+    WedgeBasisIterator(long long _N, int _k) : N(_N),k(_k), curr(_k) {
         for(int i=0;i<k;i++)
             curr[i]=i;
     }
     inline basis_elem_t getCurr() const {return curr;}
     inline bool next(){
-        int k = curr.size();
         for(int i=1;i<=k;i++){
             if(curr[k-i]!=N-i){
                 //something to advance
                 curr[k-i]++;
-                for(int j=1;j<i;j++){
-                    curr[k-j]=curr[k-i]+(i-j);
+                int val=curr[k-i]+(i-1);
+                for(int j=1;j<i;j++,val--){
+                    curr[k-j]=val;//curr[k-i]+(i-j);
                 }
                 return true;
             }
         }
         return false;
     }
+    void reset(){
+        for(int i=0;i<curr.size();i++)
+            curr[i]=i;
+    }
+
 private:
     const long long N;
+    const int k;
     std::vector<long long> curr;
 };
 
@@ -39,6 +45,7 @@ public:
     WedgeBasis(int n, int d, int p);
     long long rank(const basis_elem_t& elem) const;
     std::vector<int> multidegree(const basis_elem_t& elem) const;
+    void multidegree(const basis_elem_t& elem,std::vector<int>& ret) const;
     inline WedgeBasisIterator getIter() const{
         return WedgeBasisIterator(N,p);
     }

@@ -1,5 +1,5 @@
 
-CFLAGS= -Wall -Wextra -g
+CFLAGS= -Wall -Wextra -g -O2
 CXXFLAGS=-std=gnu++11 $(CFLAGS)
 
 srcdir=src/CreateMatricies

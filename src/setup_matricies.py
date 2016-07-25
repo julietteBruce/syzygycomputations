@@ -27,7 +27,6 @@ entries_set = set(map(tuple,args.entries))
 if len(args.entries)!=0:
     p_set = {p for (p,q) in args.entries if p<=binom(d+n,n)}
     p_set |= {p+1 for p in p_set if p+1<=binom(d+n,n)}
-    print p_set;
 else:
     p_set = set(range(1, binom(d+n,n)+1));
 
