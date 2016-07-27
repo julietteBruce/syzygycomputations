@@ -9,6 +9,12 @@ output = outdir/single_entry_{1}_{2}.$(CLUSTER).$(PROCESS).out
 error = outdir/single_entry_{1}_{2}.$(CLUSTER).$(PROCESS).err
 log = single_entry_{1}_{2}.$(CLUSTER).log
 
+### from slide 21 of
+##    https://twiki.opensciencegrid.org/twiki/pub/Education/UserSchool16Materials/gthain-2016-HTCondor-3.ppt
+request_memory = ifthenelse(MemoryUsage =!= undefined,(MemoryUsage * 3/2), 2048)
+periodic_hold = (MemoryUsage >= ((RequestMemory) * 5/4 )) && (JobStatus = 2)
+periodic_release = (JobStatus == 5) && ((CurrentTime - EnteredCurrentStatus) > 180) && (NumJobStarts < 5) && (HoldReasonCode =!= 13) && (HoldReasonCode =!= 34)
+
 universe = vanilla
 
 arguments=$(infile) {0}/out_{1}_{2}/
