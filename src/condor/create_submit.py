@@ -14,7 +14,8 @@ log = single_entry_{1}_{2}.$(CLUSTER).log
 request_memory = ifthenelse(MemoryUsage =!= undefined,max({{2048, (MemoryUsage * 3/2)}}), 2048)
 periodic_hold = (MemoryUsage >= ((RequestMemory) * 5/4 )) && (JobStatus == 2)
 periodic_release = (JobStatus == 5) && ((CurrentTime - EnteredCurrentStatus) > 180) && (NumJobStarts < 5) && (HoldReasonCode =!= 13) && (HoldReasonCode =!= 34)
-
+periodic_remove = (NumJobStarts > 10)
+on_exit_remove = (ExitCode =?= 0) && (ExitBySignal =?= false)
 universe = vanilla
 
 arguments=$(infile) {0}/out_{1}_{2}/
