@@ -8,9 +8,9 @@ sparse_data = load(inFile);
 T = spconvert(sparse_data);
 
 %%% Computes QR Factorization %%%
-[m,n] = size(T);
-q=colamd(T, [n m]);
-T=T(:,q);
+#[m,n] = size(T);
+#q=colamd(T, [n m]);
+#T=T(:,q);
 T(:,~any(T,1)) = [];
 [m,n] = size(T);
 [Q,R,P] = qr(T);
