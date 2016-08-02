@@ -1,0 +1,31 @@
+universe = vanilla
+
+executable = bin/run_final_qr.chtc.sh
+
+output = outdir/single_entry_17_1.$(CLUSTER).$(PROCESS).out
+error = queue/error/single_entry_17_1.$(CLUSTER).$(PROCESS).err
+log = queue/log/single_entry_17_1.$(CLUSTER).log
+
+transfer_input_files = bin/final_qr,$(infile)
+
+## Strip .dat.gz and replace with .txt
+outfile = $Fn(infile)
+outfile = $Fn(outfile)
+outfile = $(outfile).$(CLUSTER).$(PROCESS).txt
+
+transfer_output_files = $(outfile)
+
+### from slide 21 of
+##    https://twiki.opensciencegrid.org/twiki/pub/Education/UserSchool16Materials/gthain-2016-HTCondor-3.ppt
+
+#request_memory = ifthenelse(MemoryUsage =!= undefined,max({2048, (MemoryUsage * 3/2)}), 2048)
+#periodic_hold = (MemoryUsage >= ((RequestMemory) * 5/4 )) && (JobStatus == 2)
+#periodic_release = (JobStatus == 5) && ((CurrentTime - EnteredCurrentStatus) > 180) && (NumJobStarts < 5) && (HoldReasonCode =!= 13) && (HoldReasonCode =!= 34)
+#periodic_remove = (numjobstarts >10)
+#on_exit_remove = (ExitCode =?= 0) && (ExitBySignal =?= false)
+
+request_memory = 10000
+
+arguments= v84 $(infile) $(outfile)
+
+queue infile matching files multidegree_14_42_52.dat.gz
