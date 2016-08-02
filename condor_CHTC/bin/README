@@ -1,0 +1,4 @@
+
+The submit files require the Matlab binary in bin/final_qr.  I didn't add that binary here because I didn't want duplicate copies of the file and I don't think git handles symlinks gracefully.
+
+I think the best resolution would be to change the transfer_input_files = bin/final_qr to point to the version in the build dir (aand git_rm README)
