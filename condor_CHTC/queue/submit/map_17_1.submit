@@ -1,0 +1,44 @@
+## Flock to CHTC
+universe = vanilla
+
+
++WantFlocking = TRUE
+## Don't run on Math
+Requirements = TARGET.COLLECTOR_HOST_STRING=="cm.chtc.wisc.edu"
+
+executable = bin/run_final_qr.chtc.sh
+
+output = outdir/map_17_1.$(CLUSTER).$(PROCESS).out
+error = queue/error/map_17_1.$(CLUSTER).$(PROCESS).err
+log = queue/log/map_17_1.$(CLUSTER).log
+
+transfer_input_files = /homes/$ENV(USER)/test_6/bin/final_qr,$(infile)
+
+## Strip the path of infile because infile will reside in the $HOME on the execute node.
+dataFile =  $Fnx(infile)
+
+
+## Strip .dat.gz and replace with uniqueID. ".txt"
+outfile = $SUBSTR(dataFile, 0, -7)
+outfile = $(outfile).$(CLUSTER).$(PROCESS).txt
+
+transfer_output_files = $(outfile)
+transfer_output_remaps = "$(outfile) = outdir/$(outfile)"
+
+### Modified from slide 21 of
+##    https://twiki.opensciencegrid.org/twiki/pub/Education/UserSchool16Materials/gthain-2016-HTCondor-3.ppt
+## (more memory initially and a larger mem usage threshold for periodic_hold) 
+
+request_memory = ifthenelse(MemoryUsage =!= undefined,max({50000, (MemoryUsage * 3/2)}), 50000)
+periodic_hold = (MemoryUsage >= ((RequestMemory) * 7/4 )) && (JobStatus == 2)
+periodic_release = (JobStatus == 5) && ((CurrentTime - EnteredCurrentStatus) > 180) && (NumJobStarts < 10) && (HoldReasonCode =!= 13) && (HoldReasonCode =!= 34)
+periodic_remove = (numjobstarts >20)
+on_exit_remove = (ExitCode =?= 0) && (ExitBySignal =?= false)
+
+request_disk   = 3GB
+request_cpus   = 1
+
+arguments= v84 $(datafile) $(outfile)
+
+#queue infile matching files /homes/$ENV(USER)/test_6/matricies/map_17_1/multidegree_15_41_*.dat.gz
+queue infile matching files /homes/$ENV(USER)/test_6/matricies/map_17_1/multidegree*.dat.gz 
