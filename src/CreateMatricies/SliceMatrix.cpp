@@ -41,8 +41,8 @@ public:
     inline int getN() const {return n;};
     inline int getD() const {return d;};
     inline int getP() const {return p;};
-    //returns true if there was a next row to look at. i.e. returns true if
-    //the new contents of row are valid
+    /* Retrives the next row into the output parameter row.
+     * Returns true if a row was successfully retrieved */
     bool nextRow(vector<long long>& row){
         //vector<int> rowMd(n+1);
         string str;
@@ -82,7 +82,9 @@ private:
     ifstream f;
 };
 
-//output something matlab can understand
+/* This function writes the rows in source to the file given by filename.
+ * So that it doesn't create empty files, it doesn't open the file until we get at least one row
+ * from source to write out */
 void formatOutputMatlab(const char* filename, RowSource& source){
     long long rowNum = 1;//mathlab 1 indexes
     vector<long long> row(source.getP());
@@ -106,7 +108,8 @@ void formatOutputMatlab(const char* filename, RowSource& source){
 
 int main(int argc, char ** argv){
     if(argc<4){
-        printf("Not enough arguments\n");
+        fprintf(stderr,"Not enough arguments\n");
+        fprintf(stderr,"usage: ./SliceMatrix inputFile q k outputDir\n");
         return -1;
     }
 
@@ -121,13 +124,10 @@ int main(int argc, char ** argv){
     //something +source.getD()*q
     do{
         vector<int> firstMd(domainBasis.multidegree(domainIter.getCurr()));
-        for(vector<int> secondMd : otherMds){
+        for(const vector<int>& secondMd : otherMds){
             vector<int> md(firstMd);
             for(int i=0;i<secondMd.size();i++)
                 md[i] += secondMd[i];
-            int s = 0;
-            for(int i=0;i<md.size();i++)
-                s+=md[i];
             bool skip = false;
             for(size_t i=0;i<md.size()-1;i++){
                 if(md[i]>md[i+1]){
