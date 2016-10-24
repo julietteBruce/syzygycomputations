@@ -17,11 +17,13 @@ argparser = argparse.ArgumentParser();
 argparser.add_argument('output_dir')
 argparser.add_argument('n',type = int)
 argparser.add_argument('d',type = int)
+argparser.add_argument('-k',type = int,default=0)
 argparser.add_argument('--entry',dest='entries',help='which entries to construct matricies for',nargs=2,action='append',type=int,default=[])
 args = argparser.parse_args()
 
 d=args.d
 n=args.n
+k=args.k
 
 entries_set = set(map(tuple,args.entries))
 if len(args.entries)!=0:
@@ -43,8 +45,8 @@ for p in p_set :
                 curr_dir=os.path.join(matrix_dir,"map_{}_{}".format(p,q))
                 if not os.path.isdir(curr_dir):
                     os.makedirs(curr_dir);
-                    subprocess.check_call(["./build/SliceMatrix",temp.name,str(q),curr_dir])
+                    subprocess.check_call(["./build/SliceMatrix",temp.name,str(q),str(k),curr_dir])
 
 with open(os.path.join(args.output_dir,"info.txt"),"w") as info_file:
-    info_file.write("{} {}".format(n,d));
+    info_file.write("{} {} {}".format(n,d,k));
 

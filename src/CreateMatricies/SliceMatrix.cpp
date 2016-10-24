@@ -115,13 +115,13 @@ int main(int argc, char ** argv){
 
     RowSource source(argv[1]);
     int q = atoi(argv[2]);
-    string directory(argv[3]);
+    int k = atoi(argv[3]);
+    string directory(argv[4]);
     mkdir(argv[3],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
     set<vector<int> > allMds;
     WedgeBasis domainBasis(source.getN(),source.getD(),source.getP());
     WedgeBasisIterator domainIter = domainBasis.getIter();
-    vector<vector<int> > otherMds(createIntegerVectors(source.getN(),source.getD()*q));
-    //something +source.getD()*q
+    vector<vector<int> > otherMds(createIntegerVectors(source.getN(),source.getD()*q+k));
     do{
         vector<int> firstMd(domainBasis.multidegree(domainIter.getCurr()));
         for(const vector<int>& secondMd : otherMds){

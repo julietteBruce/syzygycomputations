@@ -40,7 +40,7 @@ class BettiTableState(object):
 
     The structure of the state is a directory with the following layout
     state/
-      info.txt - contains one line with N and P
+      info.txt - contains one line with N and P and K
       table.txt - a text file representing the betti table.
       matricies/ - contains all the matricies in folders sorted by which map they come fom
         map_p_q/ - the directory containing the matricies for the p,q-th map
@@ -63,9 +63,10 @@ class BettiTableState(object):
             raise -1;
         with open(info_path) as info_file:
             info = info_file.readline()
-            nstr,dstr = info.split()
+            nstr,dstr,kstr = info.split()
             self.__N = int(nstr)
             self.__D = int(dstr)
+            self.__K = int(kstr)
         #Note, table.txt is not loaded since we use that only as output
         self.__rank_backend = rank_backend
 
@@ -103,11 +104,11 @@ class BettiTableState(object):
         else:
             return None
     def get_betti_entry(self,p,q):
-        #the space is is \Wedge^{p}S_d \otimes S_qd
+        #the space is is \Wedge^{p}S_d \otimes S_(qd+k)
         #note the size of the basis of S_d is binom(d+n,n)
         #and then the \Wedge is binom(|S_d|,p)
         #and then the \tensor takes the cartesian product of the bases
-        basis_size = binom(binom(self.__D+self.__N,self.__N),p)*binom(self.__D*q+self.__N,self.__N);
+        basis_size = binom(binom(self.__D+self.__N,self.__N),p)*binom(self.__D*q+self.__K+self.__N,self.__N);
         ker_rank = basis_size - self.compute_rank(p,q)
         img_rank = self.compute_rank(p+1,q-1)
         return ker_rank-img_rank
