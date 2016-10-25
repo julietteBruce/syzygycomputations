@@ -5,6 +5,7 @@ import os.path
 import glob
 import re
 import sys
+import string
 
 def binom(n,k):
     val = 1
@@ -28,16 +29,25 @@ def multiplicity(md):
         n-=c
     return mult
 
+def filename_to_md(name):
+    """Take a filename of the format *multidegree_* and reads off the multidegree"""
+    match = re.search('multidegree((?:_\d+)*)',name)
+    return tuple(map(int,re.findall("\d+",match.group(1))))
+
+def md_to_filename(md,ext):
+    """Takes a multidegree and an extension an creates a file name"""
+    return "multidegree_{}{}".format(string.join(map(str,md),"_"),ext)
 
 def get_md_rank(p,q,md):
-    fname = "./out_{0}_{1}/multidegree_{2}_{3}_{4}.txt".format(p,q,*sorted(md))
+    fname = os.path.join("./out_{0}_{1}/".format(p,q),md_to_filename(sorted(md),".txt"))
     try:
         with open(fname,'r') as f:
             rnk = int(f.read())
             return rnk;
     except IOError:
+        outfileName = os.path.join("./matricies/map_{0}_{1}/".format(p,q),md_to_filename(sorted(md),".dat"));
         #if the matrix exists, return Nan otherwise 0
-        if os.path.isfile("./matricies/map_{0}_{1}/multidegree_{2}_{3}_{4}.dat".format(p,q,*sorted(md))):
+        if os.path.isfile(outfileName):
             return float('NaN');
         else:
             return 0;
@@ -48,9 +58,7 @@ def get_rank(p,q):
     tot = 0
     isValid = True
     for fname in glob.glob("./out_{0}_{1}/multidegree_*.txt".format(p,q)):
-        #FIXME this only works for n=3 right now
-        match = re.search('multidegree_(\d+)_(\d+)_(\d+).txt',fname)
-        md = (int(match.group(1)),int(match.group(2)),int(match.group(3)))
+        md = filename_to_md(fname)
         with open(fname,'r') as f:
             try:
                 rnk = int(f.read())
@@ -89,11 +97,9 @@ q=int(args.q)
 if(args.md):
     string_md = tuple(args.md.split(','))
     #TODO temporary hack to get some numbers, we need to store the size of matricies
-    fname_glob = "./matricies/map_{0}_{1}/multidegree_{2}_{3}_{4}.dat".format(p,q,*sorted(string_md))
+    fname_glob = os.path.join("./matricies/map_{0}_{1}/".format(p,q),md_to_filename(string_md,".dat"))
     for fname in glob.glob(fname_glob):
-        #FIXME this only works for n=3 right now
-        match = re.search('multidegree_(\d+)_(\d+)_(\d+).dat',fname)
-        md = (int(match.group(1)),int(match.group(2)),int(match.group(3)))
+        md = filename_to_md(fname)
         best = 0
         with open(fname) as f:
             for line in f:
