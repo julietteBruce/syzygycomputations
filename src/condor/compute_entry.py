@@ -80,19 +80,17 @@ def get_rank(p,q):
 
 argparser = argparse.ArgumentParser();
 
-argparser.add_argument('n')
-argparser.add_argument('d')
-argparser.add_argument('k')
 argparser.add_argument('p')
 argparser.add_argument('q')
 argparser.add_argument('--md')
 args = argparser.parse_args()
 
-n=int(args.n)
-d=int(args.d)
-k=int(args.k)
 p=int(args.p)
 q=int(args.q)
+
+#read in n d and k from the info file
+with open("./info.txt") as info:
+    (n,d,k) = info.read().split();
 
 if(args.md):
     string_md = tuple(args.md.split(','))
