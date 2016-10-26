@@ -5,7 +5,6 @@ import os.path
 import glob
 import re
 import sys
-import string
 
 def binom(n,k):
     val = 1
@@ -36,7 +35,7 @@ def filename_to_md(name):
 
 def md_to_filename(md,ext):
     """Takes a multidegree and an extension an creates a file name"""
-    return "multidegree_{}{}".format(string.join(map(str,md),"_"),ext)
+    return "multidegree_{}{}".format("_".join(map(str,md)),ext)
 
 def get_md_rank(p,q,md):
     fname = os.path.join("./out_{0}_{1}/".format(p,q),md_to_filename(sorted(md),".txt"))
@@ -90,7 +89,7 @@ q=int(args.q)
 
 #read in n d and k from the info file
 with open("./info.txt") as info:
-    (n,d,k) = info.read().split();
+    (n,d,k) = map(int,info.read().split());
 
 if(args.md):
     string_md = tuple(args.md.split(','))
@@ -107,7 +106,7 @@ if(args.md):
         md_basis_size = best
         ker_rank = md_basis_size - get_md_rank(p,q,md)
         img_rank = get_md_rank(p+1,q-1,md)
-        print("{} {}".format(md,ker_rank-img_rank))
+        print("{} {}".format(" ".join(map(str,md)),ker_rank-img_rank))
         sys.stdout.flush()
 else:
     basis_size = binom(binom(d+n,n),p)*binom(d*q+k+n,n);
