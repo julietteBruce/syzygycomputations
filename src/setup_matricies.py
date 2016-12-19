@@ -36,6 +36,11 @@ matrix_dir = os.path.join(args.output_dir,"matricies")
 if not os.path.isdir(matrix_dir):
     os.makedirs(matrix_dir)
 
+log_dir = os.path.join(args.output_dir,"logs/outdir");
+if not os.path.isdir(log_dir):
+    os.makedirs(log_dir)
+    
+    
 #note binom(d+n,d) is the dimension of S_d, and there is no matrix after that
 for p in p_set :
     with tempfile.NamedTemporaryFile() as temp:
