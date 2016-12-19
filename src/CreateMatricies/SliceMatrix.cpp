@@ -107,9 +107,9 @@ void formatOutputMatlab(const char* filename, RowSource& source){
 }
 
 int main(int argc, char ** argv){
-    if(argc<4){
+    if(argc<5){
         fprintf(stderr,"Not enough arguments\n");
-        fprintf(stderr,"usage: ./SliceMatrix inputFile q k outputDir\n");
+        fprintf(stderr,"usage: ./SliceMatrix inputFile q k outputDir [multidegree_list]\n");
         return -1;
     }
 
@@ -117,28 +117,43 @@ int main(int argc, char ** argv){
     int q = atoi(argv[2]);
     int k = atoi(argv[3]);
     string directory(argv[4]);
-    mkdir(argv[3],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
-    set<vector<int> > allMds;
-    WedgeBasis domainBasis(source.getN(),source.getD(),source.getP());
-    WedgeBasisIterator domainIter = domainBasis.getIter();
-    vector<vector<int> > otherMds(createIntegerVectors(source.getN(),source.getD()*q+k));
-    do{
-        vector<int> firstMd(domainBasis.multidegree(domainIter.getCurr()));
-        for(const vector<int>& secondMd : otherMds){
-            vector<int> md(firstMd);
-            for(int i=0;i<secondMd.size();i++)
-                md[i] += secondMd[i];
-            bool skip = false;
-            for(size_t i=0;i<md.size()-1;i++){
-                if(md[i]>md[i+1]){
-                    skip = true;
-                    break;
-                }
+
+    set<vector<int> >allMds;
+    if(argc>=6){
+        ifstream mdListFile (argv[5]);
+        do{
+            vector<int> md(source.getN()+1);
+            for(int i=0;i<=source.getN();i++){
+                mdListFile >> md[i];
             }
-            if(!skip)
-                allMds.insert(md);
-        }
-    }while(domainIter.next());
+            allMds.insert(md);
+            mdListFile >> ws;
+        }while(!mdListFile.eof());
+    }
+    else{
+        WedgeBasis domainBasis(source.getN(),source.getD(),source.getP());
+        WedgeBasisIterator domainIter = domainBasis.getIter();
+        vector<vector<int> > otherMds(createIntegerVectors(source.getN(),source.getD()*q+k));
+        do{
+            vector<int> firstMd(domainBasis.multidegree(domainIter.getCurr()));
+            for(const vector<int>& secondMd : otherMds){
+                vector<int> md(firstMd);
+                for(int i=0;i<secondMd.size();i++)
+                    md[i] += secondMd[i];
+                bool skip = false;
+                for(size_t i=0;i<md.size()-1;i++){
+                    if(md[i]>md[i+1]){
+                        skip = true;
+                        break;
+                    }
+                }
+                if(!skip)
+                    allMds.insert(md);
+            }
+        }while(domainIter.next());
+    }
+
+    mkdir(argv[3],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
 
     for(const vector<int>& md : allMds){
         RowSource realSource(argv[1]);
