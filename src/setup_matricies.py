@@ -19,6 +19,8 @@ argparser.add_argument('n',type = int)
 argparser.add_argument('d',type = int)
 argparser.add_argument('-k',type = int,default=0)
 argparser.add_argument('--entry',dest='entries',help='which entries to construct matricies for',nargs=2,action='append',type=int,default=[])
+argparser.add_argument('--EEL-test',dest='eel',help='construct only those matricies needed for EEL weight tests',action="store_true")
+
 args = argparser.parse_args()
 
 d=args.d
@@ -41,6 +43,16 @@ if not os.path.isdir(log_dir):
     os.makedirs(log_dir)
     
     
+print args.eel
+if not args.eel:
+    def do_slicing(mat,p,q,k,out_dir):
+        subprocess.check_call(["./build/SliceMatrix",mat,str(q),str(k),out_dir])
+else:
+    def do_slicing(mat,p,q,k,out_dir):
+        mdListFilename = os.path.join(out_dir,"mdList.txt");
+        subprocess.Popen(["M2","--script","./PrintEELConj.m2",str(d),str(p),str(q),str(k),os.path.join("../../",mdListFilename)],cwd="./src/M2Scripts/").wait();
+        subprocess.check_call(["./build/SliceMatrix",mat,str(q),str(k),out_dir,mdListFilename]);
+
 #note binom(d+n,d) is the dimension of S_d, and there is no matrix after that
 for p in p_set :
     with tempfile.NamedTemporaryFile() as temp:
@@ -50,7 +62,7 @@ for p in p_set :
                 curr_dir=os.path.join(matrix_dir,"map_{}_{}".format(p,q))
                 if not os.path.isdir(curr_dir):
                     os.makedirs(curr_dir);
-                    subprocess.check_call(["./build/SliceMatrix",temp.name,str(q),str(k),curr_dir])
+                    do_slicing(temp.name,p,q,k,curr_dir);
 
 with open(os.path.join(args.output_dir,"info.txt"),"w") as info_file:
     info_file.write("{} {} {}".format(n,d,k));
