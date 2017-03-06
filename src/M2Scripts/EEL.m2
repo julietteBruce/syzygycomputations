@@ -132,7 +132,7 @@ apply(weightsToCheck(7,8,0,4),reverse)
 weightsToCheck(9,8,1,6)
 
 betterDominantWeights EELWeights(9,8,1,6,2)
-dominantWeights(9,8,1,6,2)
+dominantEELWeights(9,8,1,6,2)
 
 printWeightsToCheck(7,6,0,4,"test.txt")
 
