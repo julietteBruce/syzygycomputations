@@ -138,4 +138,4 @@ printWeightsToCheck(7,6,0,4,"test.txt")
 
 --This case is too big with EELWeights, but works with dominantEELWeights
 EELWeights(7,19,1,4,2)
-findDominantEELWeights(7,19,1,4,2)
+dominantEELWeights(7,19,1,4,2)
