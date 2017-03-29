@@ -76,7 +76,7 @@ dominantEELWedges = (f,m,d) -> (
             ))
         );
     start = {d-1,1,0};
-    if dividesF start or (not isGen x)
+    if dividesF start or (not isGen start)
     then dfs({},filteredSucc(start),0)
     else dfs({},{start},0)
     )
@@ -92,15 +92,21 @@ dominantEELWeights = (d,p,q,b,n) -> (
     L := flatten entries gens image basis(d,I);
     DivE = apply(select(L,l -> f % l==0),g -> (exponents g)#0);
     E = (exponents f)#0 + if #DivE==0 then {0,0,0} else sum DivE; --this won't work for n!=2
-    reverse sort unique apply(dominantEELWedges((exponents f)#0,p-#DivE,d),k->  sum (k|{{0,0,0}}) +E))
+    betterDominantWeights reverse sort unique apply(dominantEELWedges((exponents f)#0,p-#DivE,d),k->  sum (k|{{0,0,0}}) +E))
 end;
 
 restart
 load "Rep_Theory.m2"
 load "EEL.m2"
-for i from 0 to 20 do (
-    if dominantEELWeights(6,i,1,4,2)!=betterDominantWeights EELWeights(6,i,1,4,2)
-    then print("weights disagree!" + toString(i));
+for i from 0 to 30 do (
+    for j from 0 to 2 do (
+        if i==0 and j==0 then continue;
+        L := dominantEELWeights(7,i,j,0,2);
+        M := betterDominantWeights dominantEELWeights(7,i,j,0,2);
+        if L!=M
+        then (print("weights aren't dominant " | toString(i) | "," | toString (j));
+              print(toString(L) | " " | toString(M)));
+        )
     )
 --for 6,2 we need to compute 2,3,4,5
 --for 6,1 we need to compute 1,2
