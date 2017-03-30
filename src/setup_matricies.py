@@ -43,7 +43,6 @@ if not os.path.isdir(log_dir):
     os.makedirs(log_dir)
     
     
-print args.eel
 if not args.eel:
     def do_slicing(mat,p,q,k,out_dir):
         subprocess.check_call(["./build/SliceMatrix",mat,str(q),str(k),out_dir])
