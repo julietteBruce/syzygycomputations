@@ -121,14 +121,15 @@ int main(int argc, char ** argv){
     set<vector<int> >allMds;
     if(argc>=6){
         ifstream mdListFile (argv[5]);
-        do{
+	mdListFile >> ws;
+	while(!mdListFile.eof()){
             vector<int> md(source.getN()+1);
             for(int i=0;i<=source.getN();i++){
                 mdListFile >> md[i];
             }
             allMds.insert(md);
             mdListFile >> ws;
-        }while(!mdListFile.eof());
+        }
     }
     else{
         WedgeBasis domainBasis(source.getN(),source.getD(),source.getP());
