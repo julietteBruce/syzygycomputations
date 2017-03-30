@@ -153,7 +153,7 @@ int main(int argc, char ** argv){
         }while(domainIter.next());
     }
 
-    mkdir(argv[3],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+    mkdir(argv[4],S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
 
     for(const vector<int>& md : allMds){
         RowSource realSource(argv[1]);
