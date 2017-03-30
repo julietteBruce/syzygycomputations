@@ -76,7 +76,7 @@ dominantEELWedges = (f,m,d) -> (
             ))
         );
     start = {d-1,1,0};
-    if dividesF start or (not isGen start)
+    if dividesF start or (not isGen start) or (not inAnnF start)
     then dfs({},filteredSucc(start),0)
     else dfs({},{start},0)
     )
