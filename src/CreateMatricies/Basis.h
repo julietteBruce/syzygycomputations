@@ -2,12 +2,14 @@
 #include <vector>
 #include <map>
 
-typedef std::vector<long long> basis_elem_t;
+typedef long long monomial_t;
+typedef std::vector<monomial_t> basis_elem_t;
 
-long long binom(long long,long long);
+//long long binom(long long,long long);
 
 //note that this iterator uses a different style from the c++ iterators, because the c++ iterators are needlessly
 //complicated for our purposes
+//This returns the elements in lexographical order
 class WedgeBasisIterator{
 public:
     WedgeBasisIterator(long long _N, int _k) : N(_N),k(_k), curr(_k) {
@@ -44,6 +46,8 @@ class WedgeBasis{
 public:
     WedgeBasis(int n, int d, int p);
     long long rank(const basis_elem_t& elem) const;
+    basis_elem_t unrank(long long id) const;
+    bool isArtinianTrivial(long long id) const;
     std::vector<int> multidegree(const basis_elem_t& elem) const;
     void multidegree(const basis_elem_t& elem,std::vector<int>& ret) const;
     inline WedgeBasisIterator getIter() const{
@@ -52,19 +56,16 @@ public:
     inline long long size() const{
         return cachedBinom(N,p);
     }
-    inline const std::vector<std::vector<int> > getBasicElements() const { return values; }
+    inline const std::vector<std::vector<int> >& getBasicElements() const { return values; }
+    inline const std::vector<std::vector<int> >& getMonomials() const {return values; }
 private:
     const long long n,d,p,N;
     const std::vector<std::vector<int> > values;
-    std::vector<std::vector<std::vector<long long> > > sumCache;
-    //a very weird function
-    //we need this for all pairs 0<=start<=stop<N?
-    //and all k<=p
-    inline long long cachedSum(int start, int stop, int k) const{
-        return sumCache[start][stop-start][k];
-    }
+    const std::vector<std::vector<long long> > binomCache;
+    std::vector<bool> trivialityCache;
+    /*returns binom(N-start,k+1)-binom(N-stop,k+1)*/
+    long long cachedSum(int start, int stop, int k) const;
 
-    std::vector<std::vector<long long> > binomCache;
     inline long long cachedBinom(int n, int k) const{
         if(k>n || k<0)
             return 0;

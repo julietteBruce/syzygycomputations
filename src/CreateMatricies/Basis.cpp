@@ -7,7 +7,6 @@
 #include <map>
 #include <list>
 
-
 using namespace std;
 
 //note we only every care about small values, so this version is fine
@@ -21,14 +20,49 @@ static T binom(T n, T k){
     return val;
 }
 
+/*
+This gives the lexagraphical rank of the basis element. Note that the basis elements are always strictly increasing
+The basic idea is that at every step, we count how elements lie lexagraphically between the current prefix
+and the next prefix, which is given by the number of words starting with the current prefix, minus the number of
+words starting with the next prefix.
+*/
 long long WedgeBasis::rank(const basis_elem_t& elem) const{
     long long ret = 0;
     int prev = -1;
     for(size_t i=0;i<elem.size();i++){
+        //add the number of basis elements between the +1 case, and actuality
         ret += cachedSum(prev+1,elem[i],p-i-1);
         prev = elem[i];
     }
     return ret;
+}
+
+//Inefficient.
+basis_elem_t WedgeBasis::unrank(long long r) const{
+    basis_elem_t elem(p);
+    int prev = -1;
+    for(size_t k=0;k<p;k++){
+        //find the cachedSum that makes this entry possible
+        for(int j=prev+1;j<N;j++){
+            int s = cachedSum(prev+1,j,p-k-1);
+            if(s>r){
+                elem[k]=j-1;
+                r -= cachedSum(prev+1,elem[k],p-k-1);
+                break;
+            }
+            else if(s==r){
+                elem[k]=j;
+                r=0;
+                break;
+            }
+        }
+        prev = elem[k];
+    }
+    return elem;
+}
+
+bool WedgeBasis::isArtinianTrivial(long long r) const{
+    return trivialityCache[r];
 }
 
 vector<int> WedgeBasis::multidegree(const basis_elem_t& elem) const{
@@ -49,31 +83,35 @@ void WedgeBasis::multidegree(const basis_elem_t& elem, vector<int>& ret) const{
     }
 }
 
-//the <long long> on the binom should really be automatic, but for some reason I get linking errors if I don't
-//specify
-WedgeBasis::WedgeBasis(int _n, int _d, int _p) : n(_n), d(_d), p(_p), N(binom<long long>(n+d,n)), values(createIntegerVectors(n,d)),sumCache(N+1),binomCache(N+1){
-
-    //precompute a bunch of stuff
+static vector<vector<long long> > createBinomialCache(int N){
+    vector<vector<long long> > ret(N+1);
     for(int i=0;i<=N;i++){
-        binomCache[i]=vector<long long>(i+1);
-        binomCache[i][0]=1;
-        binomCache[i][i]=1;
+        ret[i]=vector<long long>(i+1);
+        ret[i][0]=1;
+        ret[i][i]=1;
         for(int j=1;j<=i-1;j++)
-            binomCache[i][j]=binomCache[i-1][j-1]+binomCache[i-1][j];
+            ret[i][j]=ret[i-1][j-1]+ret[i-1][j];
     }
+    return ret;
+}
 
-    for(int start=0;start<N;start++){
-        sumCache[start]=vector<vector<long long> >(N-start);
-        for(int stop=start;stop<N;stop++){
-            sumCache[start][stop-start]=vector<long long>(p);
-            for(int k=0;k<p;k++){
-                if(start==stop)
-                    sumCache[start][stop-start][k]=0;
-                else
-                    sumCache[start][stop-start][k]=sumCache[start][stop-1-start][k]+cachedBinom(N-stop,k);
+WedgeBasis::WedgeBasis(int _n, int _d, int _p) : n(_n), d(_d), p(_p), N(binom(n+d,n)), values(createIntegerVectors(n,d))/*,sumCache(N+1)*/,binomCache(createBinomialCache(N)),trivialityCache(binomCache[N][p]){
+    WedgeBasisIterator iter = getIter();
+    for(int i=0;i<size();i++){
+        trivialityCache[i] = false;
+        for(long long w : iter.getCurr()){
+            for(int x : values[w]){
+                if(x>=d)
+                    trivialityCache[i] = true;
             }
         }
+        iter.next();
     }
+}
+
+long long WedgeBasis::cachedSum(int start, int stop, int k) const{
+    return cachedBinom(N-start,k+1)-cachedBinom(N-stop,k+1);
+    //return sumCache[start][stop-start][k];
 }
 
 
