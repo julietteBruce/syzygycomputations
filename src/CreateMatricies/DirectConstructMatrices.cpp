@@ -73,29 +73,36 @@ FILE *openOutputFile(const char* outputDir,const vector<int>& md){
     return fopen(name.str().c_str(),"w");
 }
 
-void outputMatrix(int n, int d, int p,const map<vector<int>,FILE*>& mdInfo){
+void outputMatrix(const char* outputDir,int n, int d, int p,const vector<vector<int> >& mdInfo){
+    vector<FILE*> files;
     WedgeBasis domainBasis(n,d,p);
     WedgeBasis codomainBasis(n,d,p-1);
     auto domainIter = domainBasis.getIter();
     vector<int> rowMd(n+1);
-    map<vector<int>,long long> rowNums;
-    for(const auto &info : mdInfo){
-        rowNums[info.first] = 1;
-    }
+    vector<long long> rowNums;
+    files.assign(mdInfo.size(),NULL);
+    rowNums.assign(mdInfo.size(),1);
     do{
         basis_elem_t elem = domainIter.getCurr();
         domainBasis.multidegree(elem,rowMd);
         bool exists = false;
         vector <long long> img;
-        for(const auto &info : mdInfo){
-            if(is_below(rowMd,info.first)){
+        for(size_t i=0;i<mdInfo.size();i++){
+            if(is_below(rowMd,mdInfo[i])){
                 if(!exists){
                     img = computeImage(elem,codomainBasis);
                     exists = true;
                 }
                 vector<long long> tmpImg = img;
-                if(trimImage(tmpImg,info.first,d,codomainBasis)){
-                    printMatlabRow(info.second,rowNums[info.first]++,tmpImg);
+                if(trimImage(tmpImg,mdInfo[i],d,codomainBasis)){
+                    if(!files[i]){
+                        if(!(files[i] = openOutputFile(outputDir,mdInfo[i]))){
+                            fprintf(stderr,"Could not open output file\n");
+                            exit(1);
+                        }
+                    }
+
+                    printMatlabRow(files[i],rowNums[i]++,tmpImg);
                 }
             }
         }
@@ -112,7 +119,7 @@ int main(int argc, char ** argv){
     int d=atoi(argv[2]);
     int p=atoi(argv[3]);
 
-    map<vector<int>,FILE*>allMds;
+    vector<vector<int> >allMds;
 
     const char* outputDir = argv[5];
     ifstream mdListFile (argv[4]);
@@ -122,10 +129,10 @@ int main(int argc, char ** argv){
         for(int i=0;i<=n;i++){
             mdListFile >> md[i];
         }
-        allMds[md]=openOutputFile(outputDir,md);
+        allMds.push_back(md);
         mdListFile >> ws;
     }
     if(!allMds.empty())
-        outputMatrix(n,d,p,allMds);
+        outputMatrix(outputDir,n,d,p,allMds);
     return 0;
 }
