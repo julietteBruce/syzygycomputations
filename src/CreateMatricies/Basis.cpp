@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <map>
 #include <list>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,8 +22,8 @@ static T binom(T n, T k){
 }
 
 /*
-This gives the lexagraphical rank of the basis element. Note that the basis elements are always strictly increasing
-The basic idea is that at every step, we count how elements lie lexagraphically between the current prefix
+This gives the lexicographical rank of the basis element. Note that the basis elements are always strictly increasing
+The basic idea is that at every step, we count how elements lie lexicographically between the current prefix
 and the next prefix, which is given by the number of words starting with the current prefix, minus the number of
 words starting with the next prefix.
 */
@@ -41,10 +42,10 @@ long long WedgeBasis::rank(const basis_elem_t& elem) const{
 basis_elem_t WedgeBasis::unrank(long long r) const{
     basis_elem_t elem(p);
     int prev = -1;
-    for(size_t k=0;k<p;k++){
+    for(int k=0;k<p;k++){
         //find the cachedSum that makes this entry possible
         for(int j=prev+1;j<N;j++){
-            int s = cachedSum(prev+1,j,p-k-1);
+            long long s = cachedSum(prev+1,j,p-k-1);
             if(s>r){
                 elem[k]=j-1;
                 r -= cachedSum(prev+1,elem[k],p-k-1);
@@ -61,13 +62,9 @@ basis_elem_t WedgeBasis::unrank(long long r) const{
     return elem;
 }
 
-bool WedgeBasis::isArtinianTrivial(long long r) const{
-    return trivialityCache[r];
-}
-
 vector<int> WedgeBasis::multidegree(const basis_elem_t& elem) const{
     vector<int> ret(n+1);
-    for(int e : elem){
+    for(monomial_t e : elem){
         for(int i=0;i<n+1;i++)
             ret[i]+=values[e][i];
     }
@@ -77,7 +74,7 @@ vector<int> WedgeBasis::multidegree(const basis_elem_t& elem) const{
 void WedgeBasis::multidegree(const basis_elem_t& elem, vector<int>& ret) const{
     for(int i=0;i<n+1;i++)
         ret[i]=0;
-    for(int e : elem){
+    for(monomial_t e : elem){
         for(int i=0;i<n+1;i++)
             ret[i]+=values[e][i];
     }
@@ -95,25 +92,13 @@ static vector<vector<long long> > createBinomialCache(int N){
     return ret;
 }
 
-WedgeBasis::WedgeBasis(int _n, int _d, int _p) : n(_n), d(_d), p(_p), N(binom(n+d,n)), values(createIntegerVectors(n,d))/*,sumCache(N+1)*/,binomCache(createBinomialCache(N)),trivialityCache(binomCache[N][p]){
-    WedgeBasisIterator iter = getIter();
-    for(int i=0;i<size();i++){
-        trivialityCache[i] = false;
-        for(long long w : iter.getCurr()){
-            for(int x : values[w]){
-                if(x>=d)
-                    trivialityCache[i] = true;
-            }
-        }
-        iter.next();
-    }
+WedgeBasis::WedgeBasis(int _n, vector<vector<int> > monomials, int _p) : n(_n),p(_p),N(monomials.size()),values(monomials),binomCache(createBinomialCache(N)){
 }
+
 
 long long WedgeBasis::cachedSum(int start, int stop, int k) const{
     return cachedBinom(N-start,k+1)-cachedBinom(N-stop,k+1);
-    //return sumCache[start][stop-start][k];
 }
-
 
 SubBasis::SubBasis(const WedgeBasis &parent, const vector<int>& md){
     WedgeBasisIterator iter = parent.getIter();
@@ -133,4 +118,18 @@ long long SubBasis::convert_rank(long long old_rank) const{
     if(iter!=mdMap.end())
         return iter->second;
     return -1;
+}
+
+WedgeBasis createWedgeBasis(int n, int d, int p){
+    return WedgeBasis(n, createIntegerVectors(n,d),p);
+}
+
+WedgeBasis createReducedWedgeBasis(int n, int d, int p){
+    vector<vector<int> > reducedIntegerVectors;
+    for(vector<int> elem : createIntegerVectors(n,d)){
+        if(all_of(elem.begin(),elem.end(),[d](int x){return x<d;})){
+            reducedIntegerVectors.push_back(elem);
+        }
+    }
+    return WedgeBasis(n,reducedIntegerVectors,p);
 }

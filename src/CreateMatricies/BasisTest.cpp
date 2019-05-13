@@ -6,11 +6,11 @@ using namespace std;
 
 //a series of tests
 int main(){
-    WedgeBasis basis(2,6,15);
+    WedgeBasis basis(createReducedWedgeBasis(2,7,20));
     auto iter = basis.getIter();
     long long count = 0;
     do{
-        printf("%d\n",count);
+        printf("%lld\n",count);
         assert(count==basis.rank(iter.getCurr()));
         assert(iter.getCurr()==basis.unrank(count));
         count++;

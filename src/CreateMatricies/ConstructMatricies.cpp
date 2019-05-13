@@ -43,10 +43,20 @@ void printMDInfo(const map<vector<int>,list<long long> >& mdInfo){
     }
 }
 
+bool isArtinianRedundent(int d, const basis_elem_t& elem,const WedgeBasis & basis){
+    for(auto x : elem){
+        for(auto y : basis.getBasicElements()[x]){
+            if(y>=d)
+                return true;
+        }
+    }
+    return false;
+}
+
 vector<long long> computeImage(const basis_elem_t& elem,const WedgeBasis& codomain){
     vector<long long> imgList(elem.size());
-    vector<long long> imgElem = elem;
-    long long removed = imgElem[0];
+    vector<monomial_t> imgElem = elem;
+    monomial_t removed = imgElem[0];
     imgElem.erase(imgElem.begin());
     for(size_t i=0;i<elem.size();i++){
         imgList[i]=codomain.rank(imgElem);
@@ -57,15 +67,17 @@ vector<long long> computeImage(const basis_elem_t& elem,const WedgeBasis& codoma
 
 
 void outputMatrix(int n, int d, int p){
-    WedgeBasis domainBasis(n,d,p);
-    WedgeBasis codomainBasis(n,d,p-1);
+    WedgeBasis domainBasis(createWedgeBasis(n,d,p));
+    WedgeBasis codomainBasis(createWedgeBasis(n,d,p-1));
     printf("%d %d %d\n",n,d,p);
     auto domainIter = domainBasis.getIter();
     map<vector<int>,list<long long> > domainMDs;
     //long long i=0;
     do{
         basis_elem_t elem = domainIter.getCurr();
-        printRow(computeImage(elem,codomainBasis));
+        //if(isArtinianRedundent){
+            printRow(computeImage(elem,codomainBasis));
+            //}
         //domainMDs[domainBasis.multidegree(elem)].push_back(i);
         //i++;
     }while(domainIter.next());

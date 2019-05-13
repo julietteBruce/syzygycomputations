@@ -99,8 +99,9 @@ restart
 load "Rep_Theory.m2"
 load "EEL.m2"
 for i from 0 to 30 do (
+    count := 0;
     for j from 0 to 2 do (
-        if i==0 and j==0 then continue;
+--        if i==0 and j==0 then continue;
         L := dominantEELWeights(7,i,j,0,2);
         M := betterDominantWeights dominantEELWeights(7,i,j,0,2);
         if L!=M
@@ -108,11 +109,27 @@ for i from 0 to 30 do (
               print(toString(L) | " " | toString(M)));
         )
     )
+
+for i from 0 to 30 list (
+    nz := {};
+    for j from 0 to 2 do (
+        L := dominantEELWeights(6,i-j,j,1,2);
+        if #L!=0 then nz = nz | {(i-j,j)};
+        );
+    if #nz>1 then (nz) else continue
+    )
+
 --for 6,2 we need to compute 2,3,4,5
 --for 6,1 we need to compute 1,2
 EELWeights(6,6,1,1,2)
-dominantEELWeights(6,6,1,1,2)
+EELWeights(7,1,0,0,2)
+
+EELWeights(5,2,1,1,2)
+
+dominantEELWeights(7,1,0,0,2)
 betterDominantWeights EELWeights(6,6,1,1,2)
+
+
 
 L = betterDominantWeights EELWeights(6,5,0,3,2);
 L

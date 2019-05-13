@@ -2,7 +2,9 @@
 #include <vector>
 #include <map>
 
-typedef long long monomial_t;
+//the number of monomials is always small since, the size of the basis is \binom{N}{p}
+//where N is the number of monomials
+typedef int monomial_t;
 typedef std::vector<monomial_t> basis_elem_t;
 
 //long long binom(long long,long long);
@@ -12,7 +14,7 @@ typedef std::vector<monomial_t> basis_elem_t;
 //This returns the elements in lexographical order
 class WedgeBasisIterator{
 public:
-    WedgeBasisIterator(long long _N, int _k) : N(_N),k(_k), curr(_k) {
+    WedgeBasisIterator(int _N, int _k) : N(_N),k(_k), curr(_k) {
         for(int i=0;i<k;i++)
             curr[i]=i;
     }
@@ -32,22 +34,23 @@ public:
         return false;
     }
     void reset(){
-        for(int i=0;i<curr.size();i++)
+        for(size_t i=0;i<curr.size();i++)
             curr[i]=i;
     }
 
 private:
-    const long long N;
+    const int N;
     const int k;
-    std::vector<long long> curr;
+    basis_elem_t curr;
 };
 
 class WedgeBasis{
 public:
-    WedgeBasis(int n, int d, int p);
+    //WedgeBasis(int n, int d, int p);
+    WedgeBasis(int n, std::vector<std::vector<int> > monomials, int p);
     long long rank(const basis_elem_t& elem) const;
     basis_elem_t unrank(long long id) const;
-    bool isArtinianTrivial(long long id) const;
+    //bool isArtinianTrivial(long long id) const;
     std::vector<int> multidegree(const basis_elem_t& elem) const;
     void multidegree(const basis_elem_t& elem,std::vector<int>& ret) const;
     inline WedgeBasisIterator getIter() const{
@@ -59,10 +62,10 @@ public:
     inline const std::vector<std::vector<int> >& getBasicElements() const { return values; }
     inline const std::vector<std::vector<int> >& getMonomials() const {return values; }
 private:
-    const long long n,d,p,N;
+    const long long n,p,N;
     const std::vector<std::vector<int> > values;
     const std::vector<std::vector<long long> > binomCache;
-    std::vector<bool> trivialityCache;
+    //std::vector<bool> trivialityCache;
     /*returns binom(N-start,k+1)-binom(N-stop,k+1)*/
     long long cachedSum(int start, int stop, int k) const;
 
@@ -73,6 +76,8 @@ private:
     }
 };
 
+WedgeBasis createWedgeBasis(int n,int d, int p);
+WedgeBasis createReducedWedgeBasis(int n,int d, int p);
 //TODO make this more intelligent
 class SubBasis{
 public:

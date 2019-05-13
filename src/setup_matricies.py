@@ -72,15 +72,23 @@ def allMultiDegrees(degree):
             itertools.combinations_with_replacement(range(0,degree+1),n)]
     return [differences(c) for c in sums if nondec(differences(c))];
 
+
 if args.direct:
-    def createMatrices(tmp,p,q,k,out_dir):
-        tmp.truncate();
-        totalDegree = p*d+k+q*d;
-        for md in allMultiDegrees(totalDegree):
-            #print(list(md))
-            tmp.write(bytes(" ".join(map(str,md))+"\n",'UTF-8'))
-        tmp.flush();
-        subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),tmp.name,out_dir])
+    if not args.eel:
+        def createMatrices(tmp,p,q,k,out_dir):
+            tmp.truncate();
+            totalDegree = p*d+k+q*d;
+            for md in allMultiDegrees(totalDegree):
+                #print(list(md))
+                tmp.write(bytes(" ".join(map(str,md))+"\n",'UTF-8'))
+            tmp.flush();
+            subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),tmp.name,out_dir])
+    else:
+        def createMatrices(tmp,p,q,k,out_dir):
+            tmp.truncate();
+            subprocess.Popen(["M2","--script","./PrintEELConj.m2",str(d),str(p),str(q),str(k),os.path.join(tmp.name)],cwd="./src/M2Scripts/").wait();
+            subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),tmp.name,out_dir])
+
 elif not args.eel:
     def createMatrices(mat,p,q,k,out_dir):
         subprocess.check_call(["./build/SliceMatrix",mat.name,str(q),str(k),out_dir])

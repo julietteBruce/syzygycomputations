@@ -28,7 +28,7 @@ public:
     RowSource (const char* file) : done(false),md(NULL),f(file){
         f >> n >> d >> p;
         f >> ws;
-        domainBasis = new WedgeBasis(n,d,p);
+        domainBasis = new WedgeBasis(createWedgeBasis(n,d,p));
         rowIter = new WedgeBasisIterator(domainBasis->getIter());
         rowMd.resize(n+1);
     }
@@ -132,7 +132,7 @@ int main(int argc, char ** argv){
         }
     }
     else{
-        WedgeBasis domainBasis(source.getN(),source.getD(),source.getP());
+        WedgeBasis domainBasis(createWedgeBasis(source.getN(),source.getD(),source.getP()));
         WedgeBasisIterator domainIter = domainBasis.getIter();
         vector<vector<int> > otherMds(createIntegerVectors(source.getN(),source.getD()*q+k));
         do{
