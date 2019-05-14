@@ -20,14 +20,17 @@ h0 = (a,B)->(
 -----
 ----- OUPUT: a boolean value
 -----
------ DESCRIPTION: This function computes h^0(F_a, O(B)).
+----- DESCRIPTION: This function checks whether the pushforward of
+----- O(B) by O(D) on F_{a} is Cohen-Macaulay. Here F_a is the a-th
+----- Hirzebruch surface.
 -----
 ----- WARNINGS: Everything is hardcoded to only handle a = 0.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-isCM = (a,B)->(
+isCM = (a,B,D)->(
     if a != 0 then return "error: a != 0";
-    product(B+{1,1})
+    if ((D#0)/(D#1)*(B#1)-B#0 < 2) and ((D#1)/(D#0)*(B#0)-B#1 < 2) then true
+    else false
     )
 
 
@@ -49,7 +52,7 @@ isCM = (a,B)->(
 ----- WARNINGS: Everything is hardcoded to only handle a = 0.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-lowerBound = (q,a,D,B)->(
+lowerBound = (q,a,B,D)->(
     if a != 0 then return "error: a != 0";
     -- for q = 0 see Prop 5.1 in EL
     if q == 0 then (0) 
@@ -64,9 +67,9 @@ lowerBound = (q,a,D,B)->(
 a = 0
 D = {4,5}
 B = {2,3}
-lowerBound(0,a,D,B)
-lowerBound(1,a,D,B)
-lowerBound(2,a,D,B)
+lowerBound(0,a,B,D)
+lowerBound(1,a,B,D)
+lowerBound(2,a,B,D)
 
 
 --------------------------------------------------------------------
@@ -87,7 +90,7 @@ s----- Hirzebruch surface. Note this lower bound is not necesarily sharp.
 ----- WARNINGS: Everything is hardcoded to only handle a = 0.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-upperBound = (q,a,D,B)->(
+upperBound = (q,a,B,D)->(
     if a != 0 then return "error: a != 0";
     -- for q = 0 see Prop 5.1 in EL
     if q == 0 then ( 
@@ -106,28 +109,20 @@ upperBound = (q,a,D,B)->(
 a = 0
 D = {4,5}
 B = {2,3}
-upperBound(0,a,D,B)
-upperBound(1,a,D,B)
-upperBound(2,a,D,B)
+upperBound(0,a,B,D)
+upperBound(1,a,B,D)
+upperBound(2,a,B,D)
 
 
---- Finds the relevant range based upon EEL non-vanishing.
---- For n>0 this does not quite handle the edge cases correctly. 
---
---- Daniel: Do you mean n>2 not n>0???
---
---- e.g. for (3,5,0) this includes (1,1) or (3,5,3) includes (-1,0)
+apply(3,q->( (lowerBound(q,0,B,D)..upperBound(q,0,B,D))))
+
 relevantRange = (a,B,D) ->(
     if a != 0 then return "error: a != 0";
     apply(3,q->(
-	    toList apply(lowerBound(
+	    toList apply((lowerBound(q,a,B,D)..upperBound(q,0,B,D)),i->(i,q))
 	    ))
     
-    if n == 2 then (
-    	flatten apply(ceiling(n+1-(n+b)/d),q->(
-		toList apply((lowerBound(d,n,b,q+1)+1..upperBound(d,n,b,q)),i->(i,q))
-		))
-    )
+
     else (
 	overlap := flatten apply(ceiling(n+1-(n+b)/d),q->(
 		toList apply((lowerBound(d,n,b,q+1)+1..upperBound(d,n,b,q)),i->(i,q))
