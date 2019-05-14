@@ -47,3 +47,17 @@ vector<vector<int> > createIntegerVectors(int n, int d){
     }
     return ret;
 }
+
+vector<vector<int> > createProductIntegerVectors(int n1, int n2, int d1, int d2){
+  // the number of ways to get pairs of integer vectors of ni+1 things that sum to di, i=1,2
+  vector<vector<int> > ret(binom(n1+d1,n1)*binom(n2+d2,n2),vector<int>(n1+n2+2));
+  vector<vector<int> > vec1(createIntegerVectors(n1, d1));
+  vector<vector<int> > vec2(createIntegerVectors(n2, d2));
+  for (int i=0;i<vec1.size();i++){
+    for (int j=0;j<vec2.size();j++){
+      auto iter=copy(vec1[i].begin(), vec1[i].end(), ret[i*vec2.size()+j].begin());
+      copy(vec2[j].begin(), vec2[j].end(), iter);
+	}
+  }
+  return ret;
+}

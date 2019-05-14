@@ -9,7 +9,7 @@ vpath %.h src/CreateMatricies/
 vpath %.c src/CreateMatricies/
 vpath %.cpp src/CreateMatricies/
 
-TARGETS=$(addprefix $(builddir)/, ConstructMatricies SliceMatrix BasisTest DirectConstructMatrices)
+TARGETS=$(addprefix $(builddir)/, ConstructMatricies SliceMatrix BasisTest DirectConstructMatrices Test)
 
 all : $(TARGETS)
 
@@ -28,6 +28,9 @@ $(builddir)/DirectConstructMatrices : $(addprefix $(builddir)/, DirectConstructM
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(builddir)/BasisTest : $(addprefix $(builddir)/, BasisTest.o Basis.o Combinatorics.o)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(builddir)/Test : $(addprefix $(builddir)/, Test.o Combinatorics.o)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 clean :
