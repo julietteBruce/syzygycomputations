@@ -1,0 +1,12 @@
+multidegree_0_0_9.txt 1
+multidegree_0_1_8.txt 1
+multidegree_0_2_7.txt 1
+multidegree_0_3_6.txt 1
+multidegree_0_4_5.txt 1
+multidegree_1_1_7.txt 1
+multidegree_1_2_6.txt 1
+multidegree_1_3_5.txt 1
+multidegree_1_4_4.txt 1
+multidegree_2_2_5.txt 1
+multidegree_2_3_4.txt 1
+multidegree_3_3_3.txt 1
