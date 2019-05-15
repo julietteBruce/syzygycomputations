@@ -9,7 +9,7 @@ using namespace std;
 static void printMatlabRow(FILE* fileInfo,long long rowNum, const vector<long long>& row){
     for(size_t i=0;i<row.size();i++)
         if(row[i]>=0)
-            fprintf(fileInfo,"%lld %lld %d\n",rowNum,row[i],i%2==0 ? 1 : -1);
+            fprintf(fileInfo,"%lld %lld %d\n",rowNum,row[i]+1,i%2==0 ? 1 : -1);
 }
 
 static FILE *openOutputFile(const char* outputDir,const char* namePrefix,const vector<int>& md){
