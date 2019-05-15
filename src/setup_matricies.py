@@ -82,12 +82,12 @@ if args.direct:
                 #print(list(md))
                 tmp.write(bytes(" ".join(map(str,md))+"\n",'UTF-8'))
             tmp.flush();
-            subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),tmp.name,out_dir])
+            subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),out_dir,tmp.name])
     else:
         def createMatrices(tmp,p,q,k,out_dir):
             tmp.truncate();
             subprocess.Popen(["M2","--script","./PrintEELConj.m2",str(d),str(p),str(q),str(k),os.path.join(tmp.name)],cwd="./src/M2Scripts/").wait();
-            subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),tmp.name,out_dir])
+            subprocess.check_call(["./build/DirectConstructMatrices",str(args.n),str(args.d),str(p),out_dir,tmp.name])
 
 elif not args.eel:
     def createMatrices(mat,p,q,k,out_dir):
