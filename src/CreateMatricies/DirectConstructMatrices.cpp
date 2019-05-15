@@ -1,6 +1,5 @@
 #include "Basis.h"
 #include "Combinatorics.h"
-#include "Util.h"
 #include "ChainMap.h"
 
 #include <cstdio>
