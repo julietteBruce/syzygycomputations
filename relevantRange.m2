@@ -79,15 +79,16 @@ latticeWidth = (a,D)->(
 	    )
 	else (
 	    N = matrix{{},{}};
-	    M2 = last apply(L1,i->(N = N|i));
-	    P = convexHull(M2);
+	    M3 = last apply(L1,i->(N = N|i));
+	    P = convexHull(M3);
 	    i = i+1;
 	    )
 	);
-    sub(LT+2*i,ZZ)
+    if dim(P) > 1 then sub(LT+2*i,ZZ)
+    else 2*i
     )
 
-D = {3,3}
+D = {4,4}
 latticeWidth(0,D)
 
 -------------------------------------------------------------------
@@ -170,6 +171,13 @@ lowerBound(0,a,B,D)
 lowerBound(1,a,B,D)
 lowerBound(2,a,B,D)
 
+a = 0
+D = {3,3}
+B = {0,0}
+lowerBound(0,a,B,D)
+lowerBound(1,a,B,D)
+lowerBound(2,a,B,D)
+
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 ----- INPUT: (q,a,D,B) 
@@ -235,26 +243,30 @@ upperBound(0,a,B,D)
 upperBound(1,a,B,D)
 upperBound(2,a,B,D)
 
+a = 0
+D = {3,3}
 B = {0,0}
-D = {2,4}
+upperBound(0,a,B,D)
+upperBound(1,a,B,D) --- This email doesnt seem right...
+upperBound(2,a,B,D)
 
-apply(3,q->(
-	toList apply((lowerBound(q,0,B,D)..upperBound(q,0,B,D)),i->(i,q))
-	))
 
 relevantRange = (a,B,D) ->(
-    if a != 0 then return "error: a != 0";
-    apply(3,q->(
-	    toList apply((lowerBound(q,a,B,D)..upperBound(q,0,B,D)),i->(i,q))
-	    ))
-    
-
-    else (
-	overlap := flatten apply(ceiling(n+1-(n+b)/d),q->(
-		toList apply((lowerBound(d,n,b,q+1)+1..upperBound(d,n,b,q)),i->(i,q))
-		));
-	ends := flatten apply(ceiling(n+1-(n+b)/d),q->({(lowerBound(d,n,b,q)-1,q),(upperBound(d,n,b,q)+1,q)}
-		));
-	overlap|ends	
+    L = apply(3,q->(toList apply((lowerBound(q,0,B,D)..upperBound(q,0,B,D)),i->(i))));
+    R1 = delete(,apply(L#0, i->(if member(i-1,L#1)==true or member(i-2,L#2)==true then (i,0))));
+    R2 = delete(,apply(L#1, i->(if member(i+1,L#0)==true or member(i-1,L#2)==true then (i,1))));
+    R3 = delete(,apply(L#2, i->(if member(i+2,L#0)==true or member(i+1,L#1)==true then (i,2))));
+    unique R1|R2|R3
     )
-)
+
+B = {0,0}
+D = {2,4}
+relevantRange(0,B,D)
+
+B = {0,0}
+D = {2,3}
+relevantRange(0,B,D)
+
+B = {0,0}
+D = {3,3}
+relevantRange(0,B,D)
