@@ -1,3 +1,5 @@
+#ifndef SYZYGY_BASIS_H_
+#define SYZYGY_BASIS_H_ 1
 
 #include <vector>
 #include <map>
@@ -46,8 +48,7 @@ private:
 
 class WedgeBasis{
 public:
-    //WedgeBasis(int n, int d, int p);
-    WedgeBasis(int n, std::vector<std::vector<int> > monomials, int p);
+    WedgeBasis(int m, std::vector<std::vector<int> > monomials, int p);
     long long rank(const basis_elem_t& elem) const;
     basis_elem_t unrank(long long id) const;
     //bool isArtinianTrivial(long long id) const;
@@ -62,7 +63,7 @@ public:
     inline const std::vector<std::vector<int> >& getBasicElements() const { return values; }
     inline const std::vector<std::vector<int> >& getMonomials() const {return values; }
 private:
-    const long long n,p,N;
+    const long long m,p,N;
     const std::vector<std::vector<int> > values;
     const std::vector<std::vector<long long> > binomCache;
     //std::vector<bool> trivialityCache;
@@ -77,6 +78,7 @@ private:
 };
 
 WedgeBasis createWedgeBasis(int n,int d, int p);
+WedgeBasis createProductWedgeBasis(int n1, int n2, int d1, int d2, int p);
 WedgeBasis createReducedWedgeBasis(int n,int d, int p);
 //TODO make this more intelligent
 class SubBasis{
@@ -101,3 +103,5 @@ static inline bool is_below(const std::vector<int>& a, const std::vector<int>& b
     }
     return true;
 }
+
+#endif

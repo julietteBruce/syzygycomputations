@@ -63,19 +63,19 @@ basis_elem_t WedgeBasis::unrank(long long r) const{
 }
 
 vector<int> WedgeBasis::multidegree(const basis_elem_t& elem) const{
-    vector<int> ret(n+1);
+    vector<int> ret(m);
     for(monomial_t e : elem){
-        for(int i=0;i<n+1;i++)
+        for(int i=0;i<m;i++)
             ret[i]+=values[e][i];
     }
     return ret;
 }
 
 void WedgeBasis::multidegree(const basis_elem_t& elem, vector<int>& ret) const{
-    for(int i=0;i<n+1;i++)
+    for(int i=0;i<m;i++)
         ret[i]=0;
     for(monomial_t e : elem){
-        for(int i=0;i<n+1;i++)
+        for(int i=0;i<m;i++)
             ret[i]+=values[e][i];
     }
 }
@@ -92,7 +92,7 @@ static vector<vector<long long> > createBinomialCache(int N){
     return ret;
 }
 
-WedgeBasis::WedgeBasis(int _n, vector<vector<int> > monomials, int _p) : n(_n),p(_p),N(monomials.size()),values(monomials),binomCache(createBinomialCache(N)){
+WedgeBasis::WedgeBasis(int _m, vector<vector<int> > monomials, int _p) : m(_m),p(_p),N(monomials.size()),values(monomials),binomCache(createBinomialCache(N)){
 }
 
 
@@ -121,7 +121,11 @@ long long SubBasis::convert_rank(long long old_rank) const{
 }
 
 WedgeBasis createWedgeBasis(int n, int d, int p){
-    return WedgeBasis(n, createIntegerVectors(n,d),p);
+    return WedgeBasis(n+1, createIntegerVectors(n,d),p);
+}
+
+WedgeBasis createProductWedgeBasis(int n1, int n2, int d1, int d2, int p){
+    return WedgeBasis(n1+n2+1, createProductIntegerVectors(n1,n2,d1,d2),p);
 }
 
 WedgeBasis createReducedWedgeBasis(int n, int d, int p){

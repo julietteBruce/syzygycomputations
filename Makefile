@@ -24,7 +24,7 @@ $(builddir)/ConstructMatricies : $(addprefix $(builddir)/, ConstructMatricies.o 
 $(builddir)/SliceMatrix : $(addprefix $(builddir)/, SliceMatrix.o Basis.o Combinatorics.o)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-$(builddir)/DirectConstructMatrices : $(addprefix $(builddir)/, DirectConstructMatrices.o Basis.o Combinatorics.o)
+$(builddir)/DirectConstructMatrices : $(addprefix $(builddir)/, DirectConstructMatrices.o Basis.o Combinatorics.o ChainMap.o)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(builddir)/BasisTest : $(addprefix $(builddir)/, BasisTest.o Basis.o Combinatorics.o)
