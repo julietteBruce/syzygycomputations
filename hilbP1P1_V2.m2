@@ -1,3 +1,128 @@
+
+--As of now, this file has two parts.
+--Part 1: code for manipulating schur functors
+--Part 2: naiveBetti code
+--
+
+
+
+---------------
+---------------
+--Part 1: code for manipulating schur functors
+---------------
+---------------
+
+needsPackage "SchurRings";
+A = QQ[t_0,t_1,t_2,t_3,MonomialOrder => Lex];
+
+--  Since we are using GL2 x GL2 representation throughout
+--  we will use the phrase 2-partition for a pair of partitions
+--  each of which has at most 2 parts.  In other words,
+--  2-partitions are in bijection with irred reps of GL2 x GL2
+
+--  Input:  a 2-partition represented as a list L with 4 entries
+--          (hard coded!!!)
+--  Output:  the hilbert series of the corresponding product of Schur functors
+--          NOTE: the output ring A is assumed to be hardcoded
+--                for reasons that we forgot. 
+hilbSeries22 = K->(
+    D := schurRing(s,2);
+    pole1 := toE D_{K#0-K#1};
+    phi1 := map(A,ring pole1, 
+	{t_0+t_1,t_0*t_1}|apply(4,i->0));
+    hilb1 := (t_0*t_1)^(K#1) * phi1(pole1);
+    pole2 := toE D_{K#2-K#3};
+    phi2 := map(A,ring pole2, 
+	{t_2+t_3,t_2*t_3}|apply(4,i->0));
+    hilb2 := (t_2*t_3)^(K#3) * phi2(pole2);
+    hilb1*hilb2
+    )
+
+
+--  Input: a list of pairs (2-partition, multiplicity)
+--  Output: the multigraded Hilbert series of the corresponding representation
+--  Note:  this code was taking too long on large examples, so we created
+--         some hacky multistep stuff below.
+totalHilb22 = (K)->(
+    if #K == 0 then return 0_A;
+    sum apply(K, i-> i_1*hilbSeries22(i_0))  
+    );
+
+
+--  Note: totalHilb was a bottleneck step previously.  And there is code
+--        to speed that up yielding ``newTotalHilb'' which could likely
+--        be adapted if/when needed.
+
+--  Input:  A multigraded hilbert series P
+--  Output: P(1,1,...,1), i.e. the corresponding total Betti number
+--  Caveat: doesn't seem to work w quotient rings
+totalRank = P ->(
+    phi := map(ZZ,ring P, apply(numgens ring P, i-> 1));
+    phi(P)
+    )
+
+
+--  
+--  Input:  A list of pairs  (2-partition, multiplicity)
+--  Output: The dimension of the corresponding representation
+schurRank = L ->(
+    D := schurRing(QQ,s,2);
+    sum apply(L,l-> l#1*(dim s_({l#0#0,l#0#1}))*(dim s_({l#0#2,l#0#3})))
+    )
+
+--  Input:  A polynomial
+--  Output: the exponent vector of the leading term
+expM = m->(
+    if m == 0 then return {};
+    (exponents m)#0
+    );
+
+
+--  This is a subroutine for taking a GL2 x GL2 representation
+--  and removing the product of Schur functors corresponding
+--  to its highest weight vector.
+--  Input:  A multigraded Hilbert series P
+--  Output:  The hilbert series of P - h, where
+--  h is the Hilbert series of the Schur functor
+--  of the highest weight vector of P.
+decomposeHilb1 = P ->(
+    if P == 0 then return "P is zero";
+    m := expM(leadTerm P);
+    h := hilbSeries22(m);
+    (P - h,m)
+    )
+
+
+
+--  By iterating decomposeHilb1, this should decompose
+--  a representation into Schur functors.
+--  It spits out an error if we ever get a negative
+--  leading coefficient in the Hilbert series.
+--  This allows us to catch errors in our Hilbert series computation.
+--  Input:  A multigraded Hilbert series P
+--  Output:  A pair (L,P) where L is the corresponding
+--        list of Schur functors and P is the error.
+--       P should be 0 unless there was an error
+--       our computation of multigraded numbers.
+decomposeHilb = (P) -> (
+    L := {};
+    if P == 0 then return {{},0};
+    while leadCoefficient P > 0 do(
+      	  K := decomposeHilb1(P);
+	  L = L|{K#1};
+	  P = K#0;
+	  );
+    (L,P)
+    )
+
+
+------------------------
+------------------------
+--Part 2: naiveBetti code
+------------------------
+------------------------
+
+
 --  The analogue of Algorithm 3.3 for P1xP1.
 --Input B,D
 --Output:
@@ -63,85 +188,3 @@ naiveBetti = (B,D) ->(
     );
 
 end
-
---------All of the below was us checking code:
-topGuy=10
-BBkeys0 = apply(toList(0..topGuy),i-> (i,{i},i)=>0);
-    BBkeys1 = apply(toList(1..topGuy),i-> (i,{i+1},i+1)=>0);
-    BBkeys2 = apply(toList(2..topGuy),i-> (i,{i+2},i+2)=>0);
-    BBkeys3 = apply(toList(3..topGuy),i-> (i,{i+3},i+3)=>0);
-    emptyTable = BBkeys0|BBkeys1|BBkeys2|BBkeys3;
-    Betti = new BettiTally from emptyTable;
-    T = new MutableHashTable from emptyTable;
-    Betti
-    emptyTable
-    Asg = -30*t_0^9 - 2*t_0^3 + 2*t_0
-    col = 0
-    row = 0
-    D_0 = 1
-    D_1 = 1
-    B_0 = 1
-    B_1 = 0
-    for k from 0 to 4 do(
-	coef = sub(((-1)^(col)*coefficient(t_0^((D_0+D_1)*(k)+(B_0+B_1)),Asg)),ZZ);
-	print coef;
-	if coef >= 0 then ((T#(col,{col+row},col+row) = coef); 
-	    (col= col+1);
-	    print col);
-	if coef < 0 then (
-	    row = row +1;
-	    print row;
-	    print col;
-	    T#(col-1,{col+row-1},col+row-1) = -coef);
-	)
-    L = apply(toList(keys(T)), i-> i=>T#i)
-    new BettiTally from L
-T#(0,{0},0)	
-T#(1,{1},1)  
-T#(2,{2},2)
-T#(3,{3},3)
-T#(3,{4},4)
-T#(4,{4},4)    
-
---Extra code   
-    che = true;
-    row0 = apply(BBkeys0, K-> 
-	if row = 0 do(
-	    if ((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg)) >= 0 then K=>((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg))
-	    if 
-	else K=>0
-	);
-    row1 = apply(BBkeys1, K-> 
-	if ((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg)) >= 0 then K=>((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg))
-    	else K=>0
-	);
-    row2 = apply(BBkeys2, K-> 
-	if ((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg)) >= 0 then K=>((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg))
-    	else K=>0
-	);
-    row3 = apply(BBkeys3, K-> 
-	if ((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg)) >= 0 then K=>((-1)^(K_0)*coefficient(t_0^((D_0+D_1)*(K_2)+(B_0+B_1)),Asg))
-    	else K=>0
-	);--Can create function for the if statement, this is super inefficient
-    
-    --print row0;
-    --print row1;
-    --print row2;
-    --row0 = {(0,{0},0)=>1}; 
-
-
----------TESTING:
-restart
-load "hilbP1P1_V2.m2"
---Segre Embedding, this case is alright
-naiveBetti((({0,0},{1,1}))
-
---Errors when we make B_0 != {0,0}
-naiveBetti(({0,0},{2,3}))
-
---
-naiveBetti(({1,1},{4,1}))
-
---
-naiveBetti(({1,1},{3,2}))
-
