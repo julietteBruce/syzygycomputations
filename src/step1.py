@@ -4,8 +4,10 @@ import os
 import os.path
 
 
-import setup_matrices_prod_Pn
+from setup_matrices_prod_Pn import *
+from compute_rank_magma import *
 # import compute ranks functions
+# magma -b 'file:=/fac/dcorey/Documents/syzygycomputations/test-2-out/matrices/map_1_1/multidegree_0_4_0_6.dat' ranks.magma
 
 
 # parse input data
@@ -37,3 +39,9 @@ if not os.path.isdir(matrix_dir):
 
 
 matDirs = createMatrices(n, d, b, pqs, matrix_dir)
+
+rankDict={}
+for ((p,q),matDir) in matDirs.items():
+    rankDict[(p,q)] = call_magma_dir(matDir);
+
+print(rankDict)
