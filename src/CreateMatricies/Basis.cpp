@@ -125,7 +125,7 @@ WedgeBasis createWedgeBasis(int n, int d, int p){
 }
 
 WedgeBasis createProductWedgeBasis(int n1, int n2, int d1, int d2, int p){
-    return WedgeBasis(n1+n2+1, createProductIntegerVectors(n1,n2,d1,d2),p);
+    return WedgeBasis(n1+n2+2, createProductIntegerVectors(n1,n2,d1,d2),p);
 }
 
 WedgeBasis createReducedWedgeBasis(int n, int d, int p){
