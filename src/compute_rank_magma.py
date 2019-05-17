@@ -9,12 +9,12 @@ import glob
 import os.path
 
 
-argparser = argparse.ArgumentParser();
-argparser.add_argument('map_dir')
-argparser.add_argument('rank_dir')
-argparser.add_argument('-field', type=str, default="RationalField()")
+# argparser = argparse.ArgumentParser();
+# argparser.add_argument('map_dir')
+# argparser.add_argument('rank_dir')
+# argparser.add_argument('-field', type=str, default="RationalField()")
 
-args = argparser.parse_args()
+# args = argparser.parse_args()
 
 
 def file_to_magma_sparse(matrixFile,field):
@@ -45,6 +45,13 @@ def make_magma_file_one_map(matrixFiles, outFile, field):
 def make_magma_file_from_dir(matrixDir,outFile,field):
     files=[f for f in glob.glob(matrixDir + "/*.dat")]
     make_magma_file_one_map(files, outFile, field)
+
+
+
+
+
+def call_magma():
+
 
 
 
