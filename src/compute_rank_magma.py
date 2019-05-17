@@ -20,6 +20,7 @@ def call_magma_file(matrixFile):
     magmaPath = os.path.join(os.path.dirname(__file__),"ranks.magma");
     ret = subprocess.run(["magma","-b","file:=" + matrixFile,magmaPath],stdout = subprocess.PIPE,check=True)
     if ret.returncode==0 and len(ret.stdout)!=0:
+        print(ret.stdout)
         return int(ret.stdout)
     else:
         raise Exception("Couldn't run magma");
