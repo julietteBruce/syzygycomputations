@@ -88,8 +88,9 @@ expM = m->(
 decomposeHilb1 = P ->(
     if P == 0 then return "P is zero";
     m := expM(leadTerm P);
-    h := hilbSeries22(m);
-    (P - h,m)
+    lc := leadCoefficient P;
+    h := lc*hilbSeries22(m);
+    (P - h,m,lc)
     )
 
 
@@ -109,11 +110,19 @@ decomposeHilb = (P) -> (
     if P == 0 then return {{},0};
     while leadCoefficient P > 0 do(
       	  K := decomposeHilb1(P);
-	  L = L|{K#1};
+	  L = L|{(K#1,K#2)};
 	  P = K#0;
 	  );
     (L,P)
     )
+
+
+--  Input:  the output of decomposeHilb.  namely a pair
+--       where the first entry is a list of 2-partiions and
+--       the second entry is a polynoimal
+--  Output:  the output formatted in the way we want
+--          for schurBetti output,
+--        
 
 
 ------------------------
@@ -123,51 +132,187 @@ decomposeHilb = (P) -> (
 ------------------------
 
 
---  The analogue of Algorithm 3.3 for P1xP1.
---Input B,D
---Output:
+--  Input: an integer d and a polynomial f
+--  Output:  the degree d part of f
+--  Caveat:  may be screwy if ring f has a funky grading.
+degPart = (d,f)->(
+    L = terms f;
+    out = 0;
+    scan(L,l-> if degree(l) == {d} then out = out+l);
+    out
+    )
 
-naiveBetti = (B,D) ->(
-    S = QQ[x_0,x_1,y_0,y_1,Degrees => {{1,0},{1,0},{0,1},{0,1}}];
-    --  (B,D) = ({1,0},{1,2})
+--  The analogue of Algorithm 3.3 for P1xP1.
+--Input: B,D
+--Output:  The multigraded Betti table if there 
+--        were no ``overlaps''
+naiveMultiBetti = (B,D) ->(
+    S := QQ[x_0,x_1,y_0,y_1,Degrees => {{1,0},{1,0},{0,1},{0,1}}];
     --  N is supposed to be the biggest ZZ^2 degree
     --  we would need to worry about.
     --  CAVEAT: This comes from a regularity bound, but requires various unspecified assumptions on (B,D).  Needs to be examined in detail later.
-    N =(D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
-    Lpre0 = flatten apply(toList(0..(N_0)),i->(
+    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    Lpre0 := flatten apply(toList(0..(N_0)),i->(
        	    apply(toList(0..(N_0)-i),j->(
 		    {i,j}))));
-    Lpre1 = flatten apply(toList(0..(N_1)),i->(
+    Lpre1 := flatten apply(toList(0..(N_1)),i->(
        	    apply(toList(0..(N_1)-i),j->(
 		    {i,j}))));
-    L = {};	   
+    L := {};	   
     scan(Lpre0, a->(
 	    scan(Lpre1, a'->(
 		    K = {(a_0+a_1-B_0),(a'_0+a'_1-B_1)};
 		    alpha = K_0//D_0;
 		    if alpha*D == K then L = L|{flatten {a,a'}};
 		    ))));
-    R = QQ[t_0,t_1,t_2,t_3];
-    C = sum(L,l-> 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
-    Bexps0 = flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
-    Bexps1 = flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
-    Bexps = flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
-    Bpoly = product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
-    --  DONT REUSE B
-    m0 = ideal(t_0,t_1);
-    m1 = ideal(t_2,t_3);
-    A = Bpoly*C % (m0^(N_0+1)*m1^(N_1+1));
+    C := sum(L,l-> 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    Bexps0 := flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
+    Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
+    Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
+    Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    m0 := ideal(t_0,t_1);
+    m1 := ideal(t_2,t_3);
+    A := Bpoly*C % (m0^(N_0+1)*m1^(N_1+1));
+    topGuy := (N_0+N_1)//(D_0+D_1);
+    --  This will have issues if not Cohen-Macaulay.
+    --  Fix later ???
+    numCols :=  (D_0+1)*(D_1+1)-3;
+    BBkeys0 := apply(toList(0..numCols),i-> (i,0)=>0);
+    BBkeys1 := apply(toList(1..numCols),i-> (i,1)=>0);
+    BBkeys2 := apply(toList(2..numCols),i-> (i,2)=>0);
+--    BBkeys3 := apply(toList(3..topGuy),i-> (i,3)=>0);
+    emptyTable := BBkeys0|BBkeys1|BBkeys2;
+    T := new MutableHashTable from emptyTable;
+    --  Not exactly sure how high k should go, we put a guess in for now
+    col = 0;
+    row = 0;
+    for k from 0 to (((degree A)_0 - (B_0+B_1))//(D_0+D_1)) do(
+	coef = (-1)^(col)*degPart((D_0+D_1)*(k)+(B_0+B_1),A);
+	--print coef;
+	if coef == 0 then sg = 0_ZZ;
+	if coef != 0 then sg = sub(coefficient(leadMonomial coef,coef),ZZ);
+	if sg >= 0 then ((T#(col,row) = coef); 
+	    (col= col+1));
+	if sg < 0 then (
+	    row = row +1;
+	    T#(col-1,row) = -coef);	
+	);	    
+    new HashTable from apply(toList(keys(T)), i-> i=>T#i)
+    );
+
+
+--  The analogue of Algorithm 3.3 for P1xP1.
+--Input: B,D
+--Output:  The Betti table if there were no ``overlaps'',
+--    indexed with K_{p,q} conventions
+naiveBetti = (B,D)->(
+    K := naiveMultiBetti(B,D);
+    new HashTable from apply(keys K,k-> (k => totalRank(K#k)))
+    )
+
+naiveBettiTally = (B,D)->(
+    K := naiveBetti(B,D);
+    new BettiTally from apply(keys K,k-> (k#0,{k#0+k#1},k#0+k#1)=> K#k)
+    )
+
+
+naiveSchur = (B,D)->(
+    K := naiveMultiBetti(B,D);
+    new HashTable from apply(keys K,k-> (k => (decomposeHilb(K#k))_0))
+    )
+end;
+
+
+
+
+
+
+
+
+
+
+
+restart
+load "hilbP1P1_V2.m2"
+(B,D) = ({1,0},{2,2})
+naiveBettiTally({1,0},{2,2})
+nS = naiveSchur({0,0},{2,2})
+
+new BettiTally from apply(keys nS,k->(
+	(k#0,{k#0+k#1},k#0+k#1)=> #(nS#k)
+	))
+
+new BettiTally from apply(keys nS,k->(
+	(k#0,{k#0+k#1},k#0+k#1)=>(
+	    if nS#k == {} then 0 else max apply(nS#k, i-> i_1)
+	    )
+	))
+
+naiveBettiTally({0,0},{2,2})
+o21
+nS = oo;
+nS#(3,1)
+-- indexed for a Betti tally
+naiveBettiTally(B,D)
+
+
+K = naiveMultiBetti(B,D)
+sub(K#(1,1),{t_0=>1,t_1=>1,t_2=>1,t_3=>1})
+nB = o173
+
+L#(2,1)
+naiveBetti(B,D)
+    Betti = new BettiTally from L;
+    Betti
+    );
+
+
+degPart(2,f)
+
+
+--  The analogue of Algorithm 3.3 for P1xP1.
+--Input: B,D
+--Output:  The Betti table if there were no ``overlaps''
+naiveBetti = (B,D) ->(
+    S := QQ[x_0,x_1,y_0,y_1,Degrees => {{1,0},{1,0},{0,1},{0,1}}];
+    --  (B,D) = ({1,0},{1,2})
+    --  N is supposed to be the biggest ZZ^2 degree
+    --  we would need to worry about.
+    --  CAVEAT: This comes from a regularity bound, but requires various unspecified assumptions on (B,D).  Needs to be examined in detail later.
+    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    Lpre0 := flatten apply(toList(0..(N_0)),i->(
+       	    apply(toList(0..(N_0)-i),j->(
+		    {i,j}))));
+    Lpre1 := flatten apply(toList(0..(N_1)),i->(
+       	    apply(toList(0..(N_1)-i),j->(
+		    {i,j}))));
+    L := {};	   
+    scan(Lpre0, a->(
+	    scan(Lpre1, a'->(
+		    K = {(a_0+a_1-B_0),(a'_0+a'_1-B_1)};
+		    alpha = K_0//D_0;
+		    if alpha*D == K then L = L|{flatten {a,a'}};
+		    ))));
+    R := QQ[t_0,t_1,t_2,t_3];
+    C := sum(L,l-> 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    Bexps0 := flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
+    Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
+    Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
+    Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    m0 := ideal(t_0,t_1);
+    m1 := ideal(t_2,t_3);
+    A := Bpoly*C % (m0^(N_0+1)*m1^(N_1+1));
     --print A;
-    sub(A,{t_1=>t_0,t_3=>t_2});
-    Asg = sub(A,{t_1=>t_0,t_3=>t_0,t_2=>t_0});
-    print Asg;
-    topGuy = (N_0+N_1)//(D_0+D_1);
-    BBkeys0 = apply(toList(0..topGuy),i-> (i,{i},i)=>0);
-    BBkeys1 = apply(toList(1..topGuy),i-> (i,{i+1},i+1)=>0);
-    BBkeys2 = apply(toList(2..topGuy),i-> (i,{i+2},i+2)=>0);
-    BBkeys3 = apply(toList(3..topGuy),i-> (i,{i+3},i+3)=>0);
-    emptyTable = BBkeys0|BBkeys1|BBkeys2|BBkeys3;
-    T = new MutableHashTable from emptyTable;
+--    sub(A,{t_1=>t_0,t_3=>t_2});
+    Asg := sub(A,{t_1=>t_0,t_3=>t_0,t_2=>t_0});
+--    print Asg;
+    topGuy := (N_0+N_1)//(D_0+D_1);
+    BBkeys0 := apply(toList(0..topGuy),i-> (i,{i},i)=>0);
+    BBkeys1 := apply(toList(1..topGuy),i-> (i,{i+1},i+1)=>0);
+    BBkeys2 := apply(toList(2..topGuy),i-> (i,{i+2},i+2)=>0);
+    BBkeys3 := apply(toList(3..topGuy),i-> (i,{i+3},i+3)=>0);
+    emptyTable := BBkeys0|BBkeys1|BBkeys2|BBkeys3;
+    T := new MutableHashTable from emptyTable;
     --  Not exactly sure how high k should go, we put a guess in for now
     col = 0;
     row = 0;
@@ -182,9 +327,11 @@ naiveBetti = (B,D) ->(
 	    --print col;
 	    T#(col-1,{col+row-1},col+row-1) = -coef);
 	);
-    L = apply(toList(keys(T)), i-> i=>T#i);
-    Betti = new BettiTally from L;
+    L := apply(toList(keys(T)), i-> i=>T#i);
+    Betti := new BettiTally from L;
     Betti
     );
+
+
 
 end
