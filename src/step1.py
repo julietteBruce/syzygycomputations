@@ -4,8 +4,10 @@ import os.path
 import subprocess
 
 
+
 from setup_matrices_prod_Pn import *
 from compute_rank_magma import *
+
 
 argparser = argparse.ArgumentParser();
 argparser.add_argument('output_dir')
@@ -29,8 +31,8 @@ if not os.path.isdir(out_dir):
 
 
 
-M2_input_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
-M2_input_file.writelines(['load "relevantRange.m2"\n',
+computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
+computeRR_file.writelines(['load "relevantRange.m2"\n',
                           "d={"+"{},{}".format(str(d1),str(d2)) + "}\n",
                           "b={"+"{},{}".format(str(b1),str(b2)) + "}\n",
                           "rR=relevantRange(0,b,d)\n",
@@ -42,7 +44,7 @@ M2_input_file.writelines(['load "relevantRange.m2"\n',
                           '    g<<concatenate(toString(rR#i#0), " ", toString(rR#i#1)) << endl;\n',
                           '    );\n',
                           'g<<close;'])    
-M2_input_file.close()
+computeRR_file.close()
 
 
 ## have relevantRange.m2 input this file. 
@@ -67,12 +69,22 @@ matrix_dir = os.path.join(args.output_dir,"matrices")
 if not os.path.isdir(matrix_dir):
     os.makedirs(matrix_dir)
 
+ranks_dir=os.path.join(args.output_dir,"ranks")
+if not os.path.isdir(ranks_dir):
+    os.makedirs(ranks_dir)
+
 
 matDirs = createMatrices(n, d, b, pqs, matrix_dir)
 
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
+    ranks_p_q_file=open(os.path.join(ranks_dir,"ranks_{}_{}.txt".format(p,q)),'w')
     rankDict[(p,q)] = call_magma_dir(matDir);
+    ranks_p_q_file.writelines([' '.join([str(md), str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys() ])
 
-print(rankDict)
 
+betti_dir=os.path.join(args.output_dir,"betti")
+if not os.path.isdir(betti_dir):
+    os.makedirs(betti_dir)
+
+betti_ret = subprocess.run(["python3", "src/ranksToBetti.py" , ranks_dir, betti_dir])
