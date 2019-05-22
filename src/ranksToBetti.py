@@ -8,7 +8,6 @@ import os
 import argparse
 import glob
 
-
 argparser = argparse.ArgumentParser();
 argparser.add_argument('ranks_dir')
 argparser.add_argument('betti_dir')
@@ -22,19 +21,14 @@ HARDCODE1=ranks_dir
 HARDCODE2=betti_dir
 
 
-#HARDCODE1 = 'mgRankData'
-#HARDCODE2 = 'mgBettiData'
+def filename_to_indices(name):
+    """Take a filename of the format *ranks/ranks_* and reads off the multidegree"""
+    match = re.search('ranks/ranks((?:_\d+)*)',name)
+    return tuple(map(int,re.findall("\d+",match.group(1))))
+
 
 onlyfiles = glob.glob(os.path.join(HARDCODE1,"*.txt"))
-onlyfiles_base = [os.path.basename(f) for f in onlyfiles]
-indices=[f.split('_')[1:-1] for f in onlyfiles_base]
-indices=[list(map(int,s)) for s in indices]
-
-
-#onlyfiles = [f for f in listdir(HARDCODE1) if isfile(join(HARDCODE1, f))]
-#del onlyfiles[0]
-#indices = [re.split("_", s[4:-4]) for s in onlyfiles]
-#indices = [[int(s[0]),int(s[1])] for s in indices]
+indices = [filename_to_indices(f) for f in onlyfiles]
 
 for ind in indices:
     d = {}
@@ -61,25 +55,17 @@ for ind in indices:
         for key in d.keys():
             betti[key] = (d[key][1] - d[key][0])
     outBetti = open(HARDCODE2+'/betti_{}_{}.txt'.format(ind[0],ind[1]),"w+")
-    for key in betti.keys():
-        if key == betti.keys()[-1]:
-            f = str(key)+' '+str(betti[key])
-            outBetti.write(f)
-        else: 
-            f = str(key)+' '+str(betti[key])+'\n'
-            outBetti.write(f)
+    outBetti.writelines(['{} {}\n'.format(key,betti[key]) for key in betti.keys()])
     outBetti.close()
     outSeries = open(HARDCODE2+'/bettiSeries_{}_{}.txt'.format(ind[0],ind[1]),"w+")
-    for key in betti.keys():
-        if key == betti.keys()[-1]:
-            fx = 't_0^({})+t_1^({})'.format(key[0],key[1])
-            fy = 's_0^({})*s_1^({})'.format(key[2],key[3])
-            f  = str(betti[key])+'*'+fx+'*'+fy
-            outSeries.write(f)
-        else:
-            fx = 't_0^({})*t_1^({})'.format(key[0],key[1])
-            fy = 's_0^({})*s_1^({})'.format(key[2],key[3])
-            f  = str(betti[key])+'*'+fx+'*'+fy+'+'
-            outSeries.write(f)
+    f="+".join(["{}*t_0^({})*t_1^({})*s_0^({})*s_1^({})".format(betti[key],key[0],key[1],key[2],key[3]) for key in betti.keys()])
+    outSeries.write(f)
     outSeries.close()
     print(ind)
+
+
+
+
+
+
+    
