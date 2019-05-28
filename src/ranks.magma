@@ -14,5 +14,5 @@ end for;
 M := SparseMatrix(RationalField(), rows, cols, entries);
 
 print Rank(M);
-print cols;
+print rows;
 exit;
