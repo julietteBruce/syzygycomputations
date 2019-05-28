@@ -23,13 +23,9 @@ d2=args.d2
 b1=args.b1
 b2=args.b2
 
-
-
 out_dir = args.output_dir
 if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
-
-
 
 computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
 computeRR_file.writelines(['load "relevantRange.m2"\n',
@@ -60,10 +56,10 @@ PnFile=open(os.path.join(out_dir,"relevantpq.txt"),'r')
 n=[int(i) for i in (PnFile.readline()).split()];
 d=[int(i) for i in (PnFile.readline()).split()];
 b=[int(i) for i in (PnFile.readline()).split()];
-pqs=[map(int,l.split()) for l in PnFile];
-
-
-
+pqs=[tuple(map(int,l.split())) for l in PnFile];
+for pq in pqs:
+    if pq[1]==1 and (pq[0]+1,pq[1]-1) not in pqs:
+        pqs.append((pq[0]+1, pq[1]-1))
 
 matrix_dir = os.path.join(args.output_dir,"matrices")
 if not os.path.isdir(matrix_dir):
@@ -73,17 +69,15 @@ ranks_dir=os.path.join(args.output_dir,"ranks")
 if not os.path.isdir(ranks_dir):
     os.makedirs(ranks_dir)
 
-
 matDirs = createMatrices(n, d, b, pqs, matrix_dir)
 
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
     ranks_p_q_file=open(os.path.join(ranks_dir,"ranks_{}_{}.txt".format(p,q)),'w')
     rankDict[(p,q)] = call_magma_dir(matDir);
-    ranks_p_q_file.writelines([' '.join([str(md), str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys() ])
+    ranks_p_q_file.writelines([' '.join([str(md), str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys()])
 
-
-betti_dir=os.path.join(args.output_dir,"betti")
+betti_dir = os.path.join(args.output_dir,"betti")
 if not os.path.isdir(betti_dir):
     os.makedirs(betti_dir)
 
