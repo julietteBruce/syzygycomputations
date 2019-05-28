@@ -8,4 +8,3 @@ bettiP1P1 = (d1,d2) -> (
     C := resolution kernel phi;
     betti C 
     )
-
