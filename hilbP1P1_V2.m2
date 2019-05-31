@@ -223,20 +223,76 @@ naiveSchur = (B,D)->(
 end;
 
 
+--- WARNING THIS IS HARDCODED FOR B={0,0},AND 
+--- ASSUMES WE READ IN THE FIRST ROW.
+--- THE PATH IS DEFINITELY WRONG
+fixMultiBetti = (B,D)->(
+    H = new MutableHashTable from naiveMultiBett(B,D);
+    L1 = delete(,apply(relevantRange(0,B,D),i->(if i#1 == 1 then i)));
+    scan(L1,i->(
+	    f = value get "ranksToBetti/mgBettiData/bettiSeries_"|toString(i#0)|"_"|toString(i#1);
+	    fOLD = H#i;
+	    H#i = f;
+	    H#(i#0-1,i#1+1) = H#(i#0-1,i#1+1) + (f-fOLD);
+	    ));
+    H = new HashTable from H
+    )
 
+fixedTotalBetti = (H)->(
+    applyValues(H,v->if v != 0 then sub(v,{t_0=>1,t_1=>1,t_2=>1,t_3=>1}) else 0)
+    )
 
+fixedSchurBetti = (H)->(
+    applyValues(H,v->if v != 0 then (decomposeHilb(v))_0 else 0)
+    )
 
+fileName = (B,D)->(
+    toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)"
+    )
 
-
+---- H SHOULD BE THE OUTPUT OF fixMultiBetti
+makeOutputFiles =  (B,D,H)->(
+    --  Writing the files
+    g = openOut ("M2OutputFiles/bettiF0_"|toString d|"_"|toString b|".m2");
+    --g<< "--This file computes Betti tables for P^2 for d = "|toString d|" and b = "|toString b;
+    --g<< endl;
+    g<< "A := QQ[t_0,t_1,t_2,t_3];";
+    -- need to add bit to initialize A = QQ[t_0,t_1,t_2];
+    g<< endl;
+    g<< "--tb stands for Total Betti numbers";
+    g<< endl;
+    g<< "tb"|fileName(B,D)|" = ";
+    g<< toExternalString fixedTotalBetti(H);
+    g<< ";";
+    g<< endl; 
+    g<< "--mb stands for Multigraded Betti numbers";
+    g<< endl ;
+    g<< "mb"|fileName(B,D)|" = ";
+    g<< toExternalString H;
+    g<< ";";
+    g<< endl;
+    g<< "--sb represents the betti numbers as sums of Schur functors";
+    g<< endl ;
+    g<< "sb"|fileName(B,D)|" = ";
+    g<< toExternalString fixedSchurBetti(H);
+    g<< ";";
+    g<< endl;
+    g<< "end;";    
+    close g;    
+    )
 
 
 
 
 restart
+
+
 load "hilbP1P1_V2.m2"
 (B,D) = ({1,0},{2,2})
-naiveBettiTally({1,0},{2,2})
-nS = naiveSchur({0,0},{2,2})
+time mB = naiveMultiBetti({0,0},{2,3});
+mB#(2,1)
+nS = naiveSchur({0,0},{2,2});
+nS#(4,1)
 
 new BettiTally from apply(keys nS,k->(
 	(k#0,{k#0+k#1},k#0+k#1)=> #(nS#k)
@@ -248,7 +304,7 @@ new BettiTally from apply(keys nS,k->(
 	    )
 	))
 
-naiveBettiTally({0,0},{2,2})
+naiveBettiTally({1,0},{2,2})
 o21
 nS = oo;
 nS#(3,1)
