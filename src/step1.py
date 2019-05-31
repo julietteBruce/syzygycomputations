@@ -28,7 +28,7 @@ if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
 computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
-computeRR_file.writelines(['load "relevantRange.m2"\n',
+computeRR_file.writelines(['load "src/relevantRange.m2"\n',
                           "d={"+"{},{}".format(str(d1),str(d2)) + "}\n",
                           "b={"+"{},{}".format(str(b1),str(b2)) + "}\n",
                           "rR=relevantRange(0,b,d)\n",
@@ -73,6 +73,8 @@ matDirs = createMatrices(n, d, b, pqs, matrix_dir)
 
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
+    if q==2: ## since we only need to know (p,1) or (p-1,2) for the b=0 case. Fix for b!=0 case
+        continue
     ranks_p_q_file=open(os.path.join(ranks_dir,"ranks_{}_{}.txt".format(p,q)),'w')
     rankDict[(p,q)] = call_magma_dir(matDir);
     ranks_p_q_file.writelines([' '.join(list(map(str,md)) + [str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys()])
@@ -86,13 +88,21 @@ if not os.path.isdir(betti_dir):
 
 bettiDict={}
 for pq in pqs:
+    if pq[1]==2: ## since we only need to know (p,1) or (p-1,2) for the b=0 case. Fix for b!=0 case
+        continue
     outBetti = open(os.path.join(betti_dir,'betti_{}_{}.txt'.format(pq[0],pq[1])),"w+")
     bettiPQ=betti_pq(pq[0],pq[1],rankDict)
     bettiDict[pq]=bettiPQ
     for md in bettiPQ.keys():
-        outBetti.write('{} {}\n'.format(md,bettiPQ[md]))
+        outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[2],md[3],bettiPQ[md]))
+        if md[0]<md[1]:
+            outBetti.write('{} {} {} {} {}\n'.format(md[1],md[0],md[2],md[3],bettiPQ[md]))
+            if md[2]<md[3]:
+                outBetti.write('{} {} {} {} {}\n'.format(md[1],md[0],md[3],md[2],bettiPQ[md]))
+        if md[2]<md[3]:
+            outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[3],md[2],bettiPQ[md]))
     outBetti.close()
-    outSeries=open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(pq[0],pq[1])),"w+")
+    outSeries=open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(pq[0],pq[1])),"w+") # no longer gives correct answer, to fix
     f="+".join(["{}*t_0^({})*t_1^({})*s_0^({})*s_1^({})".format(bettiPQ[md],md[0],md[1],md[2],md[3]) for md in bettiPQ.keys()])
     outSeries.write(f)
     outSeries.close()
