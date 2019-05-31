@@ -228,15 +228,15 @@ end;
 
 
 
-
-
-
-
 restart
+
+
 load "hilbP1P1_V2.m2"
 (B,D) = ({1,0},{2,2})
-naiveBettiTally({1,0},{2,2})
-nS = naiveSchur({0,0},{2,2})
+time mB = naiveMultiBetti({0,0},{2,3});
+mB#(2,1)
+nS = naiveSchur({0,0},{2,2});
+nS#(4,1)
 
 new BettiTally from apply(keys nS,k->(
 	(k#0,{k#0+k#1},k#0+k#1)=> #(nS#k)
@@ -248,7 +248,7 @@ new BettiTally from apply(keys nS,k->(
 	    )
 	))
 
-naiveBettiTally({0,0},{2,2})
+naiveBettiTally({1,0},{2,2})
 o21
 nS = oo;
 nS#(3,1)
