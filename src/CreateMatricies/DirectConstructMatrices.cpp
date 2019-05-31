@@ -43,7 +43,32 @@ int main(int argc, char ** argv){
             int q = atoi(argv[8]);
             int k1 = atoi(argv[9]);
             int k2 = atoi(argv[10]);
-            allMds = createProductIntegerVectors(n1,n2,p*d1+k1+q*d1,p*d2+k2+q*d2);
+            auto tempMds = createProductIntegerVectors(n1,n2,p*d1+k1+q*d1,p*d2+k2+q*d2);
+            for(auto md : tempMds){
+                bool isIncreasing = true;
+                int last = md[0];
+                for(int i=1;i<n1+1;i++){
+                    int curr = md[i];
+                    if(last>curr){
+                        isIncreasing = false;
+                        break;
+                    }
+                    last = curr;
+                }
+                if(!isIncreasing)
+                    continue;
+                last = md[n1+1];
+                for(int i=1;i<n2+1;i++){
+                    int curr = md[n1+1+i];
+                    if(last>curr){
+                        isIncreasing = false;
+                        break;
+                    }
+                    last = curr;
+                }
+                if(isIncreasing)
+                    allMds.push_back(md);
+            }
         }
         else{
             ifstream mdListFile (argv[8]);
@@ -67,7 +92,21 @@ int main(int argc, char ** argv){
         if(argc>6){
             int q = atoi(argv[6]);
             int k = atoi(argv[7]);
-            allMds = createIntegerVectors(n,p*d+k+q*d);
+            auto tempMds = createIntegerVectors(n,p*d+k+q*d);
+            for(auto md : tempMds){
+                bool isIncreasing = true;
+                int last = md[0];
+                for(int i=1;i<md.size();i++){
+                    int curr = md[i];
+                    if(last>curr){
+                        isIncreasing = false;
+                        break;
+                    }
+                    last = curr;
+                }
+                if(isIncreasing)
+                    allMds.push_back(md);
+            }
         }
         else{
             ifstream mdListFile (argv[5]);
