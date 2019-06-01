@@ -1,0 +1,7 @@
+##
+## emacs tmp files
+*~  
+#condor output, err, and log files
+condor*/outdir/*
+condor*/queue/log/*
+condor*/queue/error/*
