@@ -90,22 +90,14 @@ bettiDict={}
 for pq in pqs:
     if pq[1]==2: ## since we only need to know (p,1) or (p-1,2) for the b=0 case. Fix for b!=0 case
         continue
-    outBetti = open(os.path.join(betti_dir,'betti_{}_{}.txt'.format(pq[0],pq[1])),"w+")
     bettiPQ=betti_pq(pq[0],pq[1],rankDict)
     bettiDict[pq]=bettiPQ
-    for md in bettiPQ.keys():
-        outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[2],md[3],bettiPQ[md]))
-        if md[0]<md[1]:
-            outBetti.write('{} {} {} {} {}\n'.format(md[1],md[0],md[2],md[3],bettiPQ[md]))
-            if md[2]<md[3]:
-                outBetti.write('{} {} {} {} {}\n'.format(md[1],md[0],md[3],md[2],bettiPQ[md]))
-        if md[2]<md[3]:
-            outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[3],md[2],bettiPQ[md]))
-    outBetti.close()
-    outSeries=open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(pq[0],pq[1])),"w+") # no longer gives correct answer, to fix
-    f="+".join(["{}*t_0^({})*t_1^({})*s_0^({})*s_1^({})".format(bettiPQ[md],md[0],md[1],md[2],md[3]) for md in bettiPQ.keys()])
-    outSeries.write(f)
-    outSeries.close()
+    with open(os.path.join(betti_dir,'betti_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outBetti:
+        for md in bettiPQ.keys():
+            outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[2],md[3],bettiPQ[md]))
+    with open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outSeries:
+        f="+".join(["{}*t_0^({})*t_1^({})*t_2^({})*t_3^({})".format(bettiPQ[md],md[0],md[1],md[2],md[3]) for md in bettiPQ.keys() if bettiPQ[md]!=0])
+        outSeries.write(f)
 
     
 
