@@ -61,6 +61,8 @@ for pq in pqs:
     if pq[1]==1 and (pq[0]+1,pq[1]-1) not in pqs:
         pqs.append((pq[0]+1, pq[1]-1))
 
+
+
 matrix_dir = os.path.join(args.output_dir,"matrices")
 if not os.path.isdir(matrix_dir):
     os.makedirs(matrix_dir)
@@ -69,7 +71,7 @@ ranks_dir=os.path.join(args.output_dir,"ranks")
 if not os.path.isdir(ranks_dir):
     os.makedirs(ranks_dir)
 
-matDirs = createMatrices(n, d, b, pqs, matrix_dir)
+matDirs = createMatrices(n, d, b, [pq for pq in pqs if pq[1]!=2], matrix_dir)
 
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
@@ -92,12 +94,14 @@ for pq in pqs:
         continue
     bettiPQ=betti_pq(pq[0],pq[1],rankDict)
     bettiDict[pq]=bettiPQ
-    with open(os.path.join(betti_dir,'betti_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outBetti:
+    with open(os.path.join(betti_dir,'bettiMulti_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outBetti:
         for md in bettiPQ.keys():
             outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[2],md[3],bettiPQ[md]))
     with open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outSeries:
         f="+".join(["{}*t_0^({})*t_1^({})*t_2^({})*t_3^({})".format(bettiPQ[md],md[0],md[1],md[2],md[3]) for md in bettiPQ.keys() if bettiPQ[md]!=0])
         outSeries.write(f)
+    with open(os.path.join(betti_dir,'bettiTotal_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outTotal:
+        outTotal.write(str(sum([bettiPQ[md] for md in bettiPQ.keys()])))
 
     
 
