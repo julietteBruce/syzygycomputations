@@ -1,0 +1,26 @@
+universe = vanilla
+REQUIREMENTS = IsMagma==True
+magmaRanksScript = ../src/ranks.magma 
+
+p = 32003
+executable = bin/runRanks.magma.sh
+args = $(infile) $(magmaRanksScript) $(p)
+
+## Strip .dat.gz and replace with .ranks or .err
+outfileTmp = $Fn(infile)
+outfile = $Fn(outfileTmp)
+
+output = outdir/$(outfile).$(CLUSTER).$(PROCESS).ranks
+error = queue/error/$(outfile).$(CLUSTER).$(PROCESS).err
+log = queue/log/test_6_3.map_6_0.$(CLUSTER).log
+
+request_memory = 2G
+request_cpus = 1
+
+#queue infile matching files /scratch/sgoldstein/test_6_3/matricies/map_6_0/*.dat.gz
+
+queue infile matching files /scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_0_16_23.dat.gz, \
+/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_4_4_31.dat.gz, \
+/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_1_10_28.dat.gz, \
+/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_2_7_30.dat.gz, \
+/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_0_15_24.dat.gz
