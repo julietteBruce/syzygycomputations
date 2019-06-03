@@ -1,3 +1,15 @@
+if assigned p eq false then
+    p := 0;
+else
+    p := StringToInteger(p);
+end if;
+if p eq 0 then
+    F := RationalField();
+else
+    F := GF(p);
+end if;
+F;
+		      
 matrixFile := Read(file);
 lines := Split(matrixFile);
 
@@ -11,7 +23,7 @@ for line in lines do
     if e[2] gt cols then cols := e[2]; end if;
 end for;
 
-M := SparseMatrix(RationalField(), rows, cols, entries);
+M := SparseMatrix(F, rows, cols, entries);
 
 print Rank(M);
 print rows;

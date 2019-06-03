@@ -2,8 +2,9 @@ universe = vanilla
 REQUIREMENTS = IsMagma==True
 magmaRanksScript = ../src/ranks.magma 
 
+p = 32003
 executable = bin/runRanks.magma.sh
-args = $(infile) $(magmaRanksScript)
+args = $(infile) $(magmaRanksScript) $(p)
 
 ## Strip .dat.gz and replace with .ranks or .err
 outfileTmp = $Fn(infile)
