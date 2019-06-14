@@ -31,7 +31,7 @@ computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
 computeRR_file.writelines(['load "src/relevantRange.m2"\n',
                           "d={"+"{},{}".format(str(d1),str(d2)) + "}\n",
                           "b={"+"{},{}".format(str(b1),str(b2)) + "}\n",
-                          "rR=relevantRange(0,b,d)\n",
+                          "rR=relevantRange(0,b,d)\n", 
                           'g=openOut "{}/relevantpq.txt"\n'.format(out_dir),
                           'g<< "1 1" << endl;\n',
                           'g<< concatenate(toString(d#0), " ", toString(d#1)) << endl;\n',
@@ -57,9 +57,18 @@ n=[int(i) for i in (PnFile.readline()).split()];
 d=[int(i) for i in (PnFile.readline()).split()];
 b=[int(i) for i in (PnFile.readline()).split()];
 pqs=[tuple(map(int,l.split())) for l in PnFile];
-for pq in pqs:
-    if pq[1]==1 and (pq[0]+1,pq[1]-1) not in pqs:
-        pqs.append((pq[0]+1, pq[1]-1))
+
+bettiToCompute = []
+for (p,q) in pqs:
+    if (p+1,q-1) in bettiToCompute or (p-1,q+1) in bettiToCompute:
+        continue
+    else:
+        bettiToCompute.append((p,q))
+
+matricesToCompute = bettiToCompute.copy()
+for (p,q) in bettiToCompute:
+    if (p+1,q-1) not in bettiToCompute and q>0:
+        matricesToCompute.append((p+1,q-1))
 
 matrix_dir = os.path.join(args.output_dir,"matrices")
 if not os.path.isdir(matrix_dir):
@@ -69,12 +78,10 @@ ranks_dir=os.path.join(args.output_dir,"ranks")
 if not os.path.isdir(ranks_dir):
     os.makedirs(ranks_dir)
 
-matDirs = createMatrices(n, d, b, pqs, matrix_dir)
+matDirs = createMatrices(n, d, b, matricesToCompute, matrix_dir)
 
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
-    if q==2: ## since we only need to know (p,1) or (p-1,2) for the b=0 case. Fix for b!=0 case
-        continue
     ranks_p_q_file=open(os.path.join(ranks_dir,"ranks_{}_{}.txt".format(p,q)),'w')
     rankDict[(p,q)] = call_magma_dir(matDir);
     ranks_p_q_file.writelines([' '.join(list(map(str,md)) + [str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys()])
@@ -87,17 +94,17 @@ if not os.path.isdir(betti_dir):
 
 
 bettiDict={}
-for pq in pqs:
-    if pq[1]==2: ## since we only need to know (p,1) or (p-1,2) for the b=0 case. Fix for b!=0 case
-        continue
-    bettiPQ=betti_pq(pq[0],pq[1],rankDict)
-    bettiDict[pq]=bettiPQ
-    with open(os.path.join(betti_dir,'betti_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outBetti:
+for (p,q) in bettiToCompute:
+    bettiPQ=betti_pq(p,q,rankDict)
+    bettiDict[(p,q)]=bettiPQ
+    with open(os.path.join(betti_dir,'bettiMulti_{}_{}.txt'.format(p,q)),"w+") as outBetti:
         for md in bettiPQ.keys():
             outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[2],md[3],bettiPQ[md]))
-    with open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(pq[0],pq[1])),"w+") as outSeries:
+    with open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(p,q)),"w+") as outSeries:
         f="+".join(["{}*t_0^({})*t_1^({})*t_2^({})*t_3^({})".format(bettiPQ[md],md[0],md[1],md[2],md[3]) for md in bettiPQ.keys() if bettiPQ[md]!=0])
         outSeries.write(f)
+    with open(os.path.join(betti_dir,'bettiTotal_{}_{}.txt'.format(p,q)),"w+") as outTotal:
+        outTotal.write(str(sum([bettiPQ[md] for md in bettiPQ.keys()])))
 
     
 

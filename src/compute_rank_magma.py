@@ -16,9 +16,9 @@ def filename_to_md(name):
 
 def call_magma_file(matrixFile):
     magmaPath = os.path.join(os.path.dirname(__file__),"ranks.magma");
-    ret = subprocess.run(["magma","-b","file:=" + matrixFile,magmaPath],stdout = subprocess.PIPE,check=True)
+    ret = subprocess.run(["magma","-b","file:=" + matrixFile, "p:=32003", magmaPath],stdout = subprocess.PIPE,check=True)
     if ret.returncode==0 and len(ret.stdout)!=0:
-        #print(ret.stdout)
+        #return ret.stdout
         return list(map(int, ret.stdout.decode().split('\n')[:-1]))
     else:
         raise Exception("Couldn't run magma");
@@ -27,9 +27,8 @@ def call_magma_dir(matrixDir):
     rankDict={}
     for fileName in glob.glob(os.path.join(matrixDir,"*.dat")):
         md=filename_to_md(fileName)
-        if md[0]>md[1] or md[2]>md[3]: ## remove redundant multidegrees - will be unnecessary when we remove redundant multidegrees from matrices construction
-            continue
         rankDict[filename_to_md(fileName)] = call_magma_file(fileName)
+#        print((md,rankDict[md]))
     return rankDict
     
 

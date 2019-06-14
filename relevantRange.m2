@@ -18,9 +18,6 @@ h0 = (a,D)->(
     #latticePoints(P)
     )
 
-D = {2,3}
-h0(0,D)
-(D#0+1)*(D#1+1)
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -88,8 +85,6 @@ latticeWidth = (a,D)->(
     else 2*i
     )
 
-D = {4,4}
-latticeWidth(0,D)
 
 -------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -129,6 +124,7 @@ isCM = (a,B,D)->(
 ----- WARNINGS: Everything is hardcoded to only handle a = 0.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
+<-*old lower bound
 lowerBound = (q,a,B,D)->(
     if B == {0,0} then (
 	if q == 0 then (0)
@@ -149,13 +145,129 @@ lowerBound = (q,a,B,D)->(
 	else h0(a,{-2,-2}-B+D)
 	)
     ))
+*->
 
+
+lowerBound = (q,a,B,D)->(
+    if isCM(a,B,D) == false then return "error not CM";
+    --This is crucial for the use of duality esp in the a = 0 and B != (0,0) cases
+    if B == {0,0} then (
+	if q == 0 then (0)
+	else if q == 1 then (1)
+	-- for q = 2 see [CCDL, Thm 1.4]
+	else if q == 2 then (
+	    boundary(a,D)-2
+	    )
+	)
+    else (
+	if a != 0 then return "error: a != 0 and B not zero";
+    	-- for q = 0 see Prop 5.1 in EL
+    	if q == 0 then (0) 
+    	else if q == 1 then min{B#1+1,B#0+1}
+    	-- for q = 2 apply duality (see Prop 3.5 in EL)
+    	else if q == 2 then ((D_0+1)*(D_1+1)-3-(D_0-B_0-1)*(D_1-B_1-1)+1)
+	)
+    )
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (q,a,D,B) 
+-----
+----- OUPUT: an integer
+-----
+----- DESCRIPTION: This function gives the smallest N such that we
+----- are certain that the Koszul cohomology groups 
+----- K_{p,q}(F_a, O(B), O(D))=0 for all p>N. Here F_a is the a-th
+----- Hirzebruch surface. Note this lower bound is not necesarily sharp. 
+-----
+----- CAVEATS: This function will at time assume certain conditions
+----- on the relationship between B and D in order to apply results 
+----- from the literature. 
+-----  it also assumes a conjecture of Juliette's...
+-----
+----- WARNINGS: Everything is hardcoded to only handle a = 0.
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+upperBound = (q,a,B,D)->(
+    if isCM(a,B,D) == false then return "error not CM";
+    if a == 0 then(
+	pDim := (D#0+1)*(D#1+1)-3;
+    	dualB := D-B-{2,2};
+    	pDim - lowerBound(2-q,a,dualB,D)
+    	)
+    else(    
+     if B ! = {0,0} then return "error: uppperBound code currently assumes  a = 0 or B = {0,0}";
+     if q == 0 then (0)
+     else if q == 1 then (
+	 h0(a,D)-(latticeWidth(a,D)+1)
+	 )
+     else if q == 2 then (
+	 h0(a,D)-3
+	 )
+     ) 
+    )
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (a,B,D) 
+-----
+----- OUPUT: a list of p,q entries where there could be overlaps.
+-----
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+relevantRange = (a,B,D) ->(
+    L = apply(3,q->(toList apply((lowerBound(q,a,B,D)..upperBound(q,a,B,D)),i->(i))));
+    R1 = delete(,apply(L#0, i->(if member(i-1,L#1)==true or member(i-2,L#2)==true then (i,0))));
+    R2 = delete(,apply(L#1, i->(if member(i+1,L#0)==true or member(i-1,L#2)==true then (i,1))));
+    R3 = delete(,apply(L#2, i->(if member(i+2,L#0)==true or member(i+1,L#1)==true then (i,2))));
+    unique R1|R2|R3
+    )
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (p,q,a,B,D) 
+-----
+----- OUPUT: (p',q',a,B',D) where K_{p',q'}(a,B'; D) is isomorphic to K_{p,q}(a,B;D).
+-----        This will basically tell you the choice you have
+-----        when computing these groups.
+-----
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+
+koszulDual = (p,q,a,B,D) ->(
+    pDim := (D#0+1)*(D#1+1)-3;
+    dualB := D-B-{2,2};
+    (pDim - p, 2 - 1, a dualB,D)
+    )
+
+
+end;
+
+relevantRange(0,{1,2},{3,3})
+relevantRange(0,{0,0},{3,3})
+
+
+
+
+
+q
+D
+latticeWidth(a,D)
 a = 0
-D = {4,5}
-B = {2,3}
+D = {2,4}
+B = {0,2}
 lowerBound(0,a,B,D)
 lowerBound(1,a,B,D)
 lowerBound(2,a,B,D)
+upperBound(0,a,B,D)
+upperBound(1,a,B,D)
+upperBound(2,a,B,D)
+
+
 
 a = 0
 D = {2,3}
@@ -178,24 +290,8 @@ lowerBound(0,a,B,D)
 lowerBound(1,a,B,D)
 lowerBound(2,a,B,D)
 
---------------------------------------------------------------------
---------------------------------------------------------------------
------ INPUT: (q,a,D,B) 
------
------ OUPUT: an integer
------
------ DESCRIPTION: This function gives the smallest N such that we
------ are certain that the Koszul cohomology groups 
------ K_{p,q}(F_a, O(B), O(D))=0 for all p>N. Here F_a is the a-th
-s----- Hirzebruch surface. Note this lower bound is not necesarily sharp. 
------
------ CAVEATS: This function will at time assume certain conditions
------ on the relationship between B and D in order to apply results 
------ from the literature. 
------
------ WARNINGS: Everything is hardcoded to only handle a = 0.
---------------------------------------------------------------------
---------------------------------------------------------------------
+
+<-*  old version of upper bound
 upperBound = (q,a,B,D)->(
     if B == {0,0} then (
 	if q == 0 then (0)
@@ -221,6 +317,7 @@ upperBound = (q,a,B,D)->(
 	    h0(a,D)
 	    )
 	))
+*->
 
 a = 0
 D = {4,5}
@@ -251,14 +348,9 @@ upperBound(1,a,B,D) --- This email doesnt seem right...
 upperBound(2,a,B,D)
 
 
-relevantRange = (a,B,D) ->(
-    L = apply(3,q->(toList apply((lowerBound(q,0,B,D)..upperBound(q,0,B,D)),i->(i))));
-    R1 = delete(,apply(L#0, i->(if member(i-1,L#1)==true or member(i-2,L#2)==true then (i,0))));
-    R2 = delete(,apply(L#1, i->(if member(i+1,L#0)==true or member(i-1,L#2)==true then (i,1))));
-    R3 = delete(,apply(L#2, i->(if member(i+2,L#0)==true or member(i+1,L#1)==true then (i,2))));
-    unique R1|R2|R3
-    )
 
+
+--load "relevantRange.m2"
 B = {0,0}
 D = {2,4}
 relevantRange(0,B,D)

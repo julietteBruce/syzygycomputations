@@ -8,7 +8,9 @@ if p eq 0 then
 else
     F := GF(p);
 end if;
-F;
+
+
+
 		      
 matrixFile := Read(file);
 lines := Split(matrixFile);
