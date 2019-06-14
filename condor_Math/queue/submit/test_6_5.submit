@@ -1,0 +1,28 @@
+### Testing Magma rank computation on all the test_6_5/map_12_0 jobs that failed with Matlab
+
+universe = vanilla
+REQUIREMENTS = IsMagma==True
+magmaRanksScript = ../src/ranks.magma 
+
+p = 2
+executable = bin/runRanks.magma.sh
+args = $(infile) $(magmaRanksScript) $(p)
+
+## Strip .dat.gz and replace with .ranks or .err
+outfileTmp = $Fn(infile)
+outfile = $Fn(outfileTmp)
+
+output = outdir/$(outfile).p_$(p).$(CLUSTER).$(PROCESS).ranks
+error = queue/error/$(outfile).p_$(p).$(CLUSTER).$(PROCESS).err
+log = queue/log/test_6_5.map_12_0.p_$(p).$(CLUSTER).log
+
+request_memory = 150G
+request_cpus = 1
+
+queue infile matching files indir/*.dat.gz
+
+####
+p = 32003
+queue infile matching files indir/*.dat.gz
+
+

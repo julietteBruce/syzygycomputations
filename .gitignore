@@ -5,3 +5,5 @@
 condor*/outdir/*
 condor*/queue/log/*
 condor*/queue/error/*
+condor*/indir
+
