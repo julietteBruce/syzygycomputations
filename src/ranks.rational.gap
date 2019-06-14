@@ -1,18 +1,13 @@
-## Compute the rank of a sparse matrix over a finite field.
+## Compute the rank of a sparse matrix over the rationals.
 
-## Run like this to avoid hard-coding the matrix file and the prime.
-##  (export p=32003;  export matrixFile=multidegree_4_7_28.dat;
-##                 cat ranks.gap | gap -q 1> rank.out 2> rank.err ) &
+## Run like this to avoid hard-coding the matrix file.
+##  (export matrixFile=multidegree_4_7_28.dat;
+##             cat ranks.rational.gap | gap -q 1> rank.out 2> rank.err ) &
 
 LoadPackage("Gauss");;
-
 matrixFile := GAPInfo.SystemEnvironment.matrixFile;;
-p := GAPInfo.SystemEnvironment.p;;
-p := Int(p);;
-
-## Or hard-code values 
-#matixFile := "multidegree_4_7_28.dat";;
-#p := 32003;
+## Or hard-code value
+#matrixFile := "multidegree_4_7_28.dat";;
 
 d := SplitString(StringFile(matrixFile),"\n");;
 
@@ -27,7 +22,8 @@ for i in [1..Length(d)] do
     
     r := Int(e[1]);
     c := Int(e[2]);
-    v := Int(e[3]);
+    ## Coerce the sparse matrix into Q;
+    v := Rat(Rat(e[3])/2);
     
     if KnowsDictionary(SMC, r) then
         Add(LookupDictionary(SMC, r), c);
@@ -54,7 +50,7 @@ for r in [1..maxR] do
     SortParallel(cols[Length(cols)], vals[Length(cols)]);
 od;
 
-SM := SparseMatrix(maxR, maxC, cols, vals*One(GF(p)));;
+SM := SparseMatrix(maxR, maxC, cols, vals);;
 
 Rank(SM);
 maxR;
