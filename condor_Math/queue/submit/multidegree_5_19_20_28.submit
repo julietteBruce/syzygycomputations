@@ -1,0 +1,22 @@
+## This took 34 hours with the matlab version
+universe = vanilla
+REQUIREMENTS = IsMagma==True
+magmaRanksScript = ../src/ranks.magma 
+
+p = 32003
+executable = bin/runRanks.magma.sh
+args = $(infile) $(magmaRanksScript) $(p)
+
+## Strip .dat.gz and replace with .ranks or .err
+outfileTmp = $Fn(infile)
+outfile = $Fn(outfileTmp)
+
+output = outdir/$(outfile).$(CLUSTER).$(PROCESS).ranks
+error = queue/error/$(outfile).$(CLUSTER).$(PROCESS).err
+log = queue/log/$(outfile).$(CLUSTER).log
+
+request_memory = 5G
+request_cpus = 1
+
+queue infile matching files ../out-24-test-new/matrices/map_10_2/multidegree_5_19_20_28.dat
+
