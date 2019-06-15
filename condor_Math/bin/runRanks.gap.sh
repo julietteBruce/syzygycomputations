@@ -19,7 +19,7 @@ fi
 
 #/usr/local/bin/magma -b file:=$infile_unzipped p:=$p $rankScript
 
-(export p=32003;  export matrixFile=$infile; cat ../src/ranks.gap | gap -q 1> rank.out 2> rank.err ) &
+(export p=$p;  export matrixFile=$infile; cat $rankScript | /usr/local/bin/gap  -q 1> rank.out 2> rank.err ) &
 
 
 ## this probably doesn't work because MAGMA might not follow exit status conventions...
@@ -28,7 +28,3 @@ fi
 ## clean up
 #rm $infile_unzipped
 #exit $magmaStatus
-
-
-
-
