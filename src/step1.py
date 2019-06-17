@@ -58,12 +58,15 @@ d=[int(i) for i in (PnFile.readline()).split()];
 b=[int(i) for i in (PnFile.readline()).split()];
 pqs=[tuple(map(int,l.split())) for l in PnFile];
 
+sumPQ = set([p+q for (p,q) in pqs])
+pqs_split = [sorted([(p,q) for (p,q) in pqs if p+q==r], key = lambda tup: tup[1]) for r in sumPQ]
+
 bettiToCompute = []
-for (p,q) in pqs:
-    if (p+1,q-1) in bettiToCompute or (p-1,q+1) in bettiToCompute:
+for pql in pqs_split:
+    if len(pql) == 1:
         continue
     else:
-        bettiToCompute.append((p,q))
+        bettiToCompute += pql[:-1] 
 
 matricesToCompute = bettiToCompute.copy()
 for (p,q) in bettiToCompute:
@@ -91,7 +94,6 @@ for ((p,q),matDir) in matDirs.items():
 betti_dir = os.path.join(args.output_dir,"betti")
 if not os.path.isdir(betti_dir):
     os.makedirs(betti_dir)
-
 
 bettiDict={}
 for (p,q) in bettiToCompute:
