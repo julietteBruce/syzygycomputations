@@ -1,3 +1,6 @@
+// Compute the rank of a sparse matrix over GF(p) or Q if p==0
+//  Run like this:  magma -b p:=32003 matrixFile:=indir/multidegree_4_7_28.dat |gap -q ../src/ranks.magama
+
 if assigned p eq false then
     p := 0;
 else
@@ -9,9 +12,6 @@ else
     F := GF(p);
 end if;
 
-
-
-		      
 matrixFile := Read(file);
 lines := Split(matrixFile);
 
