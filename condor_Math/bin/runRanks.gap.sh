@@ -12,19 +12,14 @@ else
 fi
 
 ## unzip $infile into /tmp
-#infile_unzipped=/tmp/$(basename -s .gz $infile)
-#/bin/zcat -f $infile > $infile_unzipped
+infile_unzipped=/tmp/$(basename -s .gz $infile)
+/bin/zcat -f $infile > $infile_unzipped
 
 ## compute rank
+export p=$p
+export matrixFile=$infile_unzipped
 
-#/usr/local/bin/magma -b file:=$infile_unzipped p:=$p $rankScript
+cat $rankScript | /usr/local/bin/gap  -q 
 
-(export p=$p;  export matrixFile=$infile; cat $rankScript | /usr/local/bin/gap  -q 1> rank.out 2> rank.err ) &
-
-
-## this probably doesn't work because MAGMA might not follow exit status conventions...
-#magmaStatus=$?
-
-## clean up
-#rm $infile_unzipped
-#exit $magmaStatus
+rm $infile_unzipped
+exit 

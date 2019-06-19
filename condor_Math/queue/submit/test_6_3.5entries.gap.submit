@@ -1,0 +1,30 @@
+universe = vanilla
+gapRankScript = ../src/ranks.gap
+
+### For computing rank over Q:  condor_submit -append p=0 queue/submit/test_6_3.gap.submit
+##        similarly for GF(p)   -append p=<p>
+p = 32003
+executable = bin/runRanks.gap.sh
+args = $(infile) $(gapRankScript) $(p)
+
+## Strip .dat.gz and replace with .ranks or .err
+outfileTmp = $Fn(infile)
+outfile = $Fn(outfileTmp)
+
+output = outdir/$(outfile).$(CLUSTER).$(PROCESS).p_$(p).gap.ranks
+error = queue/error/$(outfile).$(CLUSTER).$(PROCESS).gap.err
+log = queue/log/test_6_3.map_6_0.$(CLUSTER).gap.log
+
+request_memory = 2G
+request_cpus = 1
+
+## Show timing and memory usage in output file by setting the envar RankStats
+##  Comment out this line to suppress that info
+environment = RankStats=TRUE
+
+#queue infile matching files /scratch/sgoldstein/test_6_3/matricies/map_6_0/*.dat.gz
+queue infile matching files indir/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_0_15_24.dat.gz, \
+indir/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_2_7_30.dat.gz,  \
+indir/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_1_10_28.dat.gz, \
+indir/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_4_4_31.dat.gz,  \
+indir/scratch/sgoldstein/test_6_3/matricies/map_6_0/multidegree_0_16_23.dat.gz
