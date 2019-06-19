@@ -13,7 +13,8 @@ fi
 
 ## unzip $infile into /tmp
 infile_unzipped=/tmp/$(basename -s .gz $infile)
-/bin/zcat -f $infile > $infile_unzipped
+
+/bin/zcat -f $infile > $infile_unzipped.$$
 
 ## compute rank
 export p=$p
@@ -21,5 +22,5 @@ export matrixFile=$infile_unzipped
 
 cat $rankScript | /usr/local/bin/gap  -q 
 
-rm $infile_unzipped
+rm $infile_unzipped.$$
 exit 
