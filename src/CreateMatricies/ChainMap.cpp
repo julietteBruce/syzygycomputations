@@ -41,7 +41,7 @@ void ChainMap::createMatrixFiles(const char* directory,
         return;
     vector<FILE*> files(mdInfo.size(),(FILE*)NULL);
     auto domainIter = domain.getIter();
-    vector<int> rowMd(mdInfo[0].size()+1);
+    vector<int> rowMd(mdInfo[0].size());
     vector<long long> rowNums(mdInfo.size(),1LL);
     //files.assign(mdInfo.size(),NULL);
     //rowNums.assign(mdInfo.size(),1);

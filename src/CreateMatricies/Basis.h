@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <map>
+#include <algorithm>
+#include <cstdio>
 
 //the number of monomials is always small since, the size of the basis is \binom{N}{p}
 //where N is the number of monomials
@@ -97,7 +99,11 @@ private:
 
 
 static inline bool is_below(const std::vector<int>& a, const std::vector<int>& b){
-    for(size_t i = 0; i<a.size();i++){
+    if(a.size()!=b.size()){
+        fprintf(stderr,"WARNING: multidegree vector lengths don't match\n");
+    }
+    size_t limit = std::min(a.size(),b.size());
+    for(size_t i = 0; i<limit;i++){
         if(a[i]>b[i])
             return false;
     }
