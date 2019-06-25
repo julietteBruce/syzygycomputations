@@ -135,5 +135,5 @@ WedgeBasis createReducedWedgeBasis(int n, int d, int p){
             reducedIntegerVectors.push_back(elem);
         }
     }
-    return WedgeBasis(n,reducedIntegerVectors,p);
+    return WedgeBasis(n+1,reducedIntegerVectors,p);
 }
