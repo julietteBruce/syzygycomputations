@@ -2,7 +2,7 @@ import argparse
 import os
 import os.path
 import subprocess
-
+import re
 
 
 from setup_matrices_prod_Pn import *
@@ -16,7 +16,6 @@ argparser.add_argument('d2', type = int)
 argparser.add_argument('b1', type = int)
 argparser.add_argument('b2', type = int)
 argparser.add_argument('char', type = int)
-argparser.add_argument
 
 args = argparser.parse_args()
 
@@ -55,12 +54,11 @@ m2Path.close()
 
 ## have M2 output "relevantpq.txt"
 
-PnFile=open(os.path.join(out_dir,"relevantpq.txt"),'r')
-
-n=[int(i) for i in (PnFile.readline()).split()];
-d=[int(i) for i in (PnFile.readline()).split()];
-b=[int(i) for i in (PnFile.readline()).split()];
-pqs=[tuple(map(int,l.split())) for l in PnFile];
+with open(os.path.join(out_dir,"relevantpq.txt"),'r') as PnFile:
+    n=[int(i) for i in (PnFile.readline()).split()];
+    d=[int(i) for i in (PnFile.readline()).split()];
+    b=[int(i) for i in (PnFile.readline()).split()];
+    pqs=[tuple(map(int,l.split())) for l in PnFile];
 
 sumPQ = set([p+q for (p,q) in pqs])
 pqs_split = [sorted([(p,q) for (p,q) in pqs if p+q==r], key = lambda tup: tup[1]) for r in sumPQ]
@@ -93,64 +91,41 @@ matDirs = createMatrices(n, d, b, matricesToCompute, matrix_dir)
 condor_dir = os.path.join(args.output_dir,"condor")
 if not os.path.isdir(condor_dir):
     os.makedirs(condor_dir)
+log_dir = os.path.join(condor_dir, "log")
+if not os.path.isdir(log_dir):
+    os.makedirs(log_dir)
+error_dir = os.path.join(condor_dir, "error")
+if not os.path.isdir(error_dir):
+    os.makedirs(error_dir)
+
+
+
     
 def ranks_condor(p,q):
-    if not os.path.isdir(os.path.join(ranks_dir,"ranks_{}_{}".format(p,q))):
-    os.makedirs(condor_dir)
-    with open(os.path.join(condor_dir, "map_{}_{}.submit".format(p,q))) as submitFile:
+    ranks_pq_dir = os.path.join(ranks_dir,"map_{}_{}".format(p,q))
+    if not os.path.isdir(ranks_pq_dir):
+        os.makedirs(ranks_pq_dir)
+    with open(os.path.join(condor_dir, "map_{}_{}.submit".format(p,q)),'w') as submitFile:
         submitFile.write("\n".join([
             "universe = vanilla",
             "REQUIREMENTS = IsMagma==True",
             "magmaRanksScript = src/ranks.magma",
-            "p = 32003",
+            "p = {}".format(char),
             "executable = condor_Math/bin/runRanks.magma.sh",
             "args = $(infile) $(magmaRanksScript) $(p)",
             "outfileTmp = $Fn(infile)",
             "outfile = $Fn(outfileTmp)",
-            "output = {}/$(outfile).$(CLUSTER).$(PROCESS).ranks".format(ranks_dir),
-            "error = condor_Math/queue/error/$(outfile).$(CLUSTER).$(PROCESS).err",
-            "log = condor_Math/queue/log/test_24_map_11_1.$(CLUSTER).log",
-            "request_memory = 5G",
+            "output = {}/$(outfile).$(CLUSTER).$(PROCESS).ranks".format(ranks_pq_dir),
+            "error = {}/$(outfile).$(CLUSTER).$(PROCESS).err".format(error_dir),
+            "log = {}/.map_{}_{}.$(CLUSTER).log".format(log_dir,p,q),
+            "request_memory = 25G",
             "request_cpus = 1",
             "queue infile matching files {}/map_{}_{}/*.dat".format(matrix_dir,p,q)
         ]))
 
+    subprocess.run(["condor_submit", os.path.join(condor_dir, "map_{}_{}.submit".format(p,q))])
 
+for (p,q) in matricesToCompute:
+    ranks_condor(p,q)
 
-
-# #############################################
-
-rankDict={}
-for ((p,q),matDir) in matDirs.items():
-    ranks_p_q_file=open(os.path.join(ranks_dir,"ranks_{}_{}.txt".format(p,q)),'w')
-    rankDict[(p,q)] = call_magma_dir(matDir, char);
-    ranks_p_q_file.writelines([' '.join(list(map(str,md)) + [str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys()])
-
-
-
-betti_dir = os.path.join(args.output_dir,"betti")
-if not os.path.isdir(betti_dir):
-    os.makedirs(betti_dir)
-
-bettiDict={}
-for (p,q) in bettiToCompute:
-    bettiPQ=betti_pq(p,q,rankDict)
-    bettiDict[(p,q)]=bettiPQ
-    with open(os.path.join(betti_dir,'bettiMulti_{}_{}.txt'.format(p,q)),"w+") as outBetti:
-        for md in bettiPQ.keys():
-            outBetti.write('{} {} {} {} {}\n'.format(md[0],md[1],md[2],md[3],bettiPQ[md]))
-    with open(os.path.join(betti_dir,'bettiSeries_{}_{}.txt'.format(p,q)),"w+") as outSeries:
-        f="+".join(["{}*t_0^({})*t_1^({})*t_2^({})*t_3^({})".format(bettiPQ[md],md[0],md[1],md[2],md[3]) for md in bettiPQ.keys() if bettiPQ[md]!=0])
-        outSeries.write(f)
-    with open(os.path.join(betti_dir,'bettiTotal_{}_{}.txt'.format(p,q)),"w+") as outTotal:
-        outTotal.write(str(sum([bettiPQ[md] for md in bettiPQ.keys()])))
-
-    
-
-
-#betti_ret = subprocess.run(["python3", "src/ranksToBetti.py" , ranks_dir, betti_dir])
-
-
-subprocess.run(["tar", "-czf", os.path.join(args.output_dir,"matrices_{}_{}_{}_{}.tar.gz".format(d1,d2,b1,b2)) , matrix_dir])
-
-subprocess.run(["rm", "-rf", matrix_dir])
+subprocess.run(["rm", os.path.join(out_dir,"computeRR.m2")])
