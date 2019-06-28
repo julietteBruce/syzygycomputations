@@ -88,37 +88,6 @@ if not os.path.isdir(ranks_dir):
 matDirs = createMatrices(n, d, b, matricesToCompute, matrix_dir)
 
 
-# ########## Condor option ####################
-
-condor_dir = os.path.join(args.output_dir,"condor")
-if not os.path.isdir(condor_dir):
-    os.makedirs(condor_dir)
-    
-def ranks_condor(p,q):
-    if not os.path.isdir(os.path.join(ranks_dir,"ranks_{}_{}".format(p,q))):
-    os.makedirs(condor_dir)
-    with open(os.path.join(condor_dir, "map_{}_{}.submit".format(p,q))) as submitFile:
-        submitFile.write("\n".join([
-            "universe = vanilla",
-            "REQUIREMENTS = IsMagma==True",
-            "magmaRanksScript = src/ranks.magma",
-            "p = 32003",
-            "executable = condor_Math/bin/runRanks.magma.sh",
-            "args = $(infile) $(magmaRanksScript) $(p)",
-            "outfileTmp = $Fn(infile)",
-            "outfile = $Fn(outfileTmp)",
-            "output = {}/$(outfile).$(CLUSTER).$(PROCESS).ranks".format(ranks_dir),
-            "error = condor_Math/queue/error/$(outfile).$(CLUSTER).$(PROCESS).err",
-            "log = condor_Math/queue/log/test_24_map_11_1.$(CLUSTER).log",
-            "request_memory = 5G",
-            "request_cpus = 1",
-            "queue infile matching files {}/map_{}_{}/*.dat".format(matrix_dir,p,q)
-        ]))
-
-
-
-
-# #############################################
 
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
