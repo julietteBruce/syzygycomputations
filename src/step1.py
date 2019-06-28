@@ -15,6 +15,8 @@ argparser.add_argument('d1', type = int)
 argparser.add_argument('d2', type = int)
 argparser.add_argument('b1', type = int)
 argparser.add_argument('b2', type = int)
+argparser.add_argument('char', type = int)
+argparser.add_argument
 
 args = argparser.parse_args()
 
@@ -22,10 +24,12 @@ d1=args.d1
 d2=args.d2
 b1=args.b1
 b2=args.b2
+char = args.char
 
 out_dir = args.output_dir
 if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
+
 
 computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
 computeRR_file.writelines(['load "src/relevantRange.m2"\n',
@@ -70,7 +74,7 @@ for pql in pqs_split:
 
 matricesToCompute = bettiToCompute.copy()
 for (p,q) in bettiToCompute:
-    if (p+1,q-1) not in bettiToCompute and q>0:
+    if (p+1,q-1) not in bettiToCompute:
         matricesToCompute.append((p+1,q-1))
 
 matrix_dir = os.path.join(args.output_dir,"matrices")
@@ -83,10 +87,12 @@ if not os.path.isdir(ranks_dir):
 
 matDirs = createMatrices(n, d, b, matricesToCompute, matrix_dir)
 
+
+
 rankDict={}
 for ((p,q),matDir) in matDirs.items():
     ranks_p_q_file=open(os.path.join(ranks_dir,"ranks_{}_{}.txt".format(p,q)),'w')
-    rankDict[(p,q)] = call_magma_dir(matDir);
+    rankDict[(p,q)] = call_magma_dir(matDir, char);
     ranks_p_q_file.writelines([' '.join(list(map(str,md)) + [str(rankDict[(p,q)][md][0]), str(rankDict[(p,q)][md][1])+'\n']) for md in rankDict[(p,q)].keys()])
 
 
@@ -114,3 +120,6 @@ for (p,q) in bettiToCompute:
 #betti_ret = subprocess.run(["python3", "src/ranksToBetti.py" , ranks_dir, betti_dir])
 
 
+subprocess.run(["tar", "-czf", os.path.join(args.output_dir,"matrices_{}_{}_{}_{}.tar.gz".format(d1,d2,b1,b2)) , matrix_dir])
+
+subprocess.run(["rm", "-rf", matrix_dir])

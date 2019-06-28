@@ -48,7 +48,7 @@ V4=[(1,0,2,3),(0,1,3,2),(1,0,3,2)]
 def betti_pq(p,q,rank_dict):
     bettiPQ={}
     for md in rank_dict[(p,q)].keys():
-        if q-1<0:
+        if (p+1,q-1) not in rank_dict.keys():
             bettiPQ[md] = rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0]
         else:
             if md not in rank_dict[(p+1,q-1)].keys():
