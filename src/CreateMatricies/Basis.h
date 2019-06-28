@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cstdio>
 
+#include "ToricVariety.h"
+
 //the number of monomials is always small since, the size of the basis is \binom{N}{p}
 //where N is the number of monomials
 typedef int monomial_t;
@@ -82,21 +84,7 @@ private:
 WedgeBasis createWedgeBasis(int n,int d, int p);
 WedgeBasis createProductWedgeBasis(int n1, int n2, int d1, int d2, int p);
 WedgeBasis createReducedWedgeBasis(int n,int d, int p);
-//TODO make this more intelligent
-class SubBasis{
-public:
-    SubBasis(const WedgeBasis& parent,const std::vector<int>& md);
-    long long convert_rank(long long old_rank) const;
-    inline long long size() const{
-        return mdMap.size();
-    }
-private:
-    const std::vector<int> maxMultidegree;
-    std::map<long long,long long> mdMap;
-};
-
-
-
+WedgeBasis createToricWedgeBasis(const ToricVariety& tv, const std::vector<int>& d, int p);
 
 static inline bool is_below(const std::vector<int>& a, const std::vector<int>& b){
     if(a.size()!=b.size()){

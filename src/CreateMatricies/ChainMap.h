@@ -20,6 +20,13 @@ protected:
     const WedgeBasis codomain;
 };
 
+class ToricChainMap : public ChainMap {
+public:
+    ToricChainMap(ToricVariety& tv, const std::vector<int>& degree, int p)
+        : ChainMap(createToricWedgeBasis(tv,degree,p),
+                   createToricWedgeBasis(tv,degree,p)) {}
+};
+
 class PnChainMap : public ChainMap{
 public:
     PnChainMap(int n, int d, int p) :
@@ -30,13 +37,6 @@ public:
                                                 const std::vector<int>& md);
 protected:
     int embeddingDegree;
-};
-
-class ProductChainMap : public ChainMap{
-public:
-    ProductChainMap(int n1, int n2, int d1, int d2, int p) :
-        ChainMap(createProductWedgeBasis(n1,n2,d1,d2,p),
-                 createProductWedgeBasis(n1,n2,d1,d2,p-1)) {}
 };
 
 #endif

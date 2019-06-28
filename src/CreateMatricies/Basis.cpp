@@ -92,32 +92,13 @@ static vector<vector<long long> > createBinomialCache(int N){
     return ret;
 }
 
-WedgeBasis::WedgeBasis(int _m, vector<vector<int> > monomials, int _p) : m(_m),p(_p),N(monomials.size()),values(monomials),binomCache(createBinomialCache(N)){
+WedgeBasis::WedgeBasis(int _m, vector<vector<int> > monomials, int _p)
+    : m(_m),p(_p),N(monomials.size()),values(monomials),binomCache(createBinomialCache(N)){
 }
 
 
 long long WedgeBasis::cachedSum(int start, int stop, int k) const{
     return cachedBinom(N-start,k+1)-cachedBinom(N-stop,k+1);
-}
-
-SubBasis::SubBasis(const WedgeBasis &parent, const vector<int>& md){
-    WedgeBasisIterator iter = parent.getIter();
-    int counter = 0;
-    int parent_counter = 0;
-    do{
-        if(is_below(parent.multidegree(iter.getCurr()),md)){
-            mdMap[parent_counter]=counter;
-            counter++;
-        }
-        parent_counter++;
-    }while(iter.next());
-}
-
-long long SubBasis::convert_rank(long long old_rank) const{
-    auto iter = mdMap.find(old_rank);
-    if(iter!=mdMap.end())
-        return iter->second;
-    return -1;
 }
 
 WedgeBasis createWedgeBasis(int n, int d, int p){
@@ -136,4 +117,8 @@ WedgeBasis createReducedWedgeBasis(int n, int d, int p){
         }
     }
     return WedgeBasis(n+1,reducedIntegerVectors,p);
+}
+
+WedgeBasis createToricWedgeBasis(const ToricVariety& tv, const vector<int>& d, int p){
+    return WedgeBasis(tv.mdegSize,tv.multidegrees(d,false),p);
 }
