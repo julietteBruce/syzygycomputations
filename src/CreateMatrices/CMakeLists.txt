@@ -1,0 +1,6 @@
+add_executable (DirectConstructMatrices DirectConstructMatrices.cpp Basis.cpp Combinatorics.cpp ChainMap.cpp ToricVariety.cpp)
+target_compile_features (DirectConstructMatrices PUBLIC cxx_std_11)
+add_executable(SliceMatrix SliceMatrix.cpp Basis.cpp Combinatorics.cpp )
+target_compile_features (SliceMatrix PUBLIC cxx_std_11)
+add_executable(ConstructMatrices ConstructMatrices.cpp Basis.cpp Combinatorics.cpp)
+target_compile_features (ConstructMatrices PUBLIC cxx_std_11)
