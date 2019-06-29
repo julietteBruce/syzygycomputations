@@ -11,6 +11,7 @@ from ranksToBetti import *
 
 argparser = argparse.ArgumentParser();
 argparser.add_argument('output_dir')
+argparser.add_argument('--tmp', help="store matrix directory in /tmp/dcorey")
 argparser.add_argument('d1', type = int)
 argparser.add_argument('d2', type = int)
 argparser.add_argument('b1', type = int)
@@ -28,7 +29,6 @@ char = args.char
 out_dir = args.output_dir
 if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
-
 
 computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
 computeRR_file.writelines(['load "src/relevantRange.m2"\n',
@@ -75,7 +75,11 @@ for (p,q) in bettiToCompute:
     if (p+1,q-1) not in bettiToCompute:
         matricesToCompute.append((p+1,q-1))
 
-matrix_dir = os.path.join(args.output_dir,"matrices")
+if args.tmp:
+    matrix_dir = '/tmp/dcorey/matrices_{}_{}_{}_{}'.format(d1,d2,b1,b2)
+else:
+    matrix_dir = os.path.join(args.output_dir,"matrices")
+
 if not os.path.isdir(matrix_dir):
     os.makedirs(matrix_dir)
 
@@ -88,9 +92,13 @@ matDirs = createMatrices(n, d, b, matricesToCompute, matrix_dir)
 
 # ########## Condor option ####################
 
+
 condor_dir = os.path.join(args.output_dir,"condor")
 if not os.path.isdir(condor_dir):
     os.makedirs(condor_dir)
+submit_dir = os.path.join(condor_dir,"submit")
+if not os.path.isdir(submit_dir):
+    os.makedirs(submit_dir)
 log_dir = os.path.join(condor_dir, "log")
 if not os.path.isdir(log_dir):
     os.makedirs(log_dir)
@@ -105,7 +113,7 @@ def ranks_condor(p,q):
     ranks_pq_dir = os.path.join(ranks_dir,"map_{}_{}".format(p,q))
     if not os.path.isdir(ranks_pq_dir):
         os.makedirs(ranks_pq_dir)
-    with open(os.path.join(condor_dir, "map_{}_{}.submit".format(p,q)),'w') as submitFile:
+    with open(os.path.join(submit_dir, "map_{}_{}.submit".format(p,q)),'w') as submitFile:
         submitFile.write("\n".join([
             "universe = vanilla",
             "REQUIREMENTS = IsMagma==True",
@@ -117,15 +125,15 @@ def ranks_condor(p,q):
             "outfile = $Fn(outfileTmp)",
             "output = {}/$(outfile).$(CLUSTER).$(PROCESS).ranks".format(ranks_pq_dir),
             "error = {}/$(outfile).$(CLUSTER).$(PROCESS).err".format(error_dir),
-            "log = {}/.map_{}_{}.$(CLUSTER).log".format(log_dir,p,q),
-            "request_memory = 25G",
+            "log = {}/map_{}_{}.$(CLUSTER).log".format(log_dir,p,q),
+            "request_memory = 2G",
             "request_cpus = 1",
             "queue infile matching files {}/map_{}_{}/*.dat".format(matrix_dir,p,q)
         ]))
 
-    subprocess.run(["condor_submit", os.path.join(condor_dir, "map_{}_{}.submit".format(p,q))])
+    subprocess.run(["condor_submit", os.path.join(submit_dir, "map_{}_{}.submit".format(p,q))])
 
 for (p,q) in matricesToCompute:
     ranks_condor(p,q)
 
-subprocess.run(["rm", os.path.join(out_dir,"computeRR.m2")])
+# subprocess.run(["rm", os.path.join(out_dir,"computeRR.m2")])
