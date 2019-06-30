@@ -1,3 +1,4 @@
+add_compile_options(-Wall -Wextra -O2)
 add_executable (DirectConstructMatrices DirectConstructMatrices.cpp Basis.cpp Combinatorics.cpp ChainMap.cpp ToricVariety.cpp)
 target_compile_features (DirectConstructMatrices PUBLIC cxx_std_11)
 add_executable(SliceMatrix SliceMatrix.cpp Basis.cpp Combinatorics.cpp )
