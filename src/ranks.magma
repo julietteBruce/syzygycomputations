@@ -27,6 +27,6 @@ end for;
 
 M := SparseMatrix(F, rows, cols, entries);
 
-print Rank(M);
+print Rank(M: MakeWider);
 print rows;
 exit;
