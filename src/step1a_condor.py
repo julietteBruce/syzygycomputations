@@ -106,8 +106,6 @@ error_dir = os.path.join(condor_dir, "error")
 if not os.path.isdir(error_dir):
     os.makedirs(error_dir)
 
-
-
     
 def ranks_condor(p,q):
     ranks_pq_dir = os.path.join(ranks_dir,"map_{}_{}".format(p,q))

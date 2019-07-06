@@ -28,10 +28,10 @@ end for;
 M := SparseMatrix(F, rows, cols, entries);
 
 if assigned transpose eq true then
-   time Rank(M: MakeWider);
+   RM := Rank(M: MakeWider);
 else	
-	Rank(M);
+   RM := Rank(M);
 end if;
-//print Rank(M);
+print RM;
 print rows;
 exit;
