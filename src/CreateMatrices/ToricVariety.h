@@ -37,7 +37,7 @@ public:
 
 class Product : public ToricVariety {
 protected:
-    std::vector<std::unique_ptr<ToricVariety> > tvs;
+    const std::vector<std::unique_ptr<ToricVariety> > tvs;
 public:
     Product(const std::vector<ToricVariety* >& tvs);
     virtual std::vector<std::vector<int> > multidegrees(const std::vector<int>& deg, bool dedup) const;

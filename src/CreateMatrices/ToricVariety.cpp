@@ -33,7 +33,7 @@ vector<vector<int> > Pn::multidegrees(const vector<int>& degree, bool dedup) con
     }
 }
 
-int sumBy(const vector<ToricVariety*>& values, function<int(ToricVariety*)> f){
+static int sumBy(const vector<ToricVariety*>& values, function<int(ToricVariety*)> f){
     int ret = 0;
     for(ToricVariety* x : values){
         ret += f(x);
@@ -41,18 +41,23 @@ int sumBy(const vector<ToricVariety*>& values, function<int(ToricVariety*)> f){
     return ret;
 }
 
-int getDegreeSize(ToricVariety *v){
+static int getDegreeSize(ToricVariety *v){
     return v->degreeSize;
 }
 
-int getMdSize(ToricVariety *v){
+static int getMdSize(ToricVariety *v){
     return v->mdegSize;
 }
 
+static vector<unique_ptr<ToricVariety> > mkTvsVector(vector<ToricVariety*> tvs){
+    vector<unique_ptr<ToricVariety> > ret (tvs.size());
+    for(size_t i = 0;i<tvs.size();i++)
+        ret[i] = unique_ptr<ToricVariety>(tvs[i]);
+    return ret;
+}
+
 Product::Product(const vector<ToricVariety* >& _tvs) :
-    ToricVariety(sumBy(_tvs,getDegreeSize),sumBy(_tvs,getMdSize)),tvs(_tvs.size()){
-    for(size_t i = 0;i<_tvs.size();i++)
-        tvs[i] = unique_ptr<ToricVariety>(_tvs[i]);
+    ToricVariety(sumBy(_tvs,getDegreeSize),sumBy(_tvs,getMdSize)),tvs(mkTvsVector(_tvs)){
 }
 
 vector<vector<int> > Product::multidegrees(const vector<int>& degree, bool dedup) const {
