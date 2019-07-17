@@ -43,4 +43,15 @@ public:
     virtual std::vector<std::vector<int> > multidegrees(const std::vector<int>& deg, bool dedup) const;
 };
 
+/** A P1 bundle over a toric variety
+ */
+class P1Bundle : public ToricVariety {
+protected:
+    const std::unique_ptr<ToricVariety> baseSpace;
+    const std::vector<int> twist;//the cartier data of the divisor of the bundle
+public:
+    P1Bundle(ToricVariety* baseSpace, const std::vector<int>& twistDegree);
+    virtual std::vector<std::vector<int> > multidegrees(const std::vector<int>& deg, bool dedup) const;
+};
+
 #endif

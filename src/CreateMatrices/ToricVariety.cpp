@@ -7,6 +7,8 @@
 using namespace std;
 
 vector<vector<int> > Pn::multidegrees(const vector<int>& degree, bool dedup) const {
+    if(degree[0]<0)
+        return {};
     vector<vector<int> > initialList = createIntegerVectors(n,degree[0]);
     if(dedup){
         vector<vector<int> > ret;
@@ -90,3 +92,36 @@ vector<vector<int> > Product::multidegrees(const vector<int>& degree, bool dedup
         }
     }
 }
+
+P1Bundle::P1Bundle(ToricVariety* _baseSpace, const std::vector<int>& _twistDegree)
+    : ToricVariety(_baseSpace->degreeSize+1,_baseSpace->mdegSize+2),
+      baseSpace(_baseSpace), twist(_twistDegree){
+}
+
+vector<vector<int> > P1Bundle::multidegrees(const vector<int>& degree, bool dedup) const{
+    size_t baseDegreeSize = baseSpace->degreeSize;
+    int d = degree[baseDegreeSize];
+    vector<vector<vector<int> > > mds(d+1);
+    vector<int> currentDegree(degree.begin(),degree.begin()+baseDegreeSize);
+    for(int i=0;i<=d;i++){
+        mds[i] = baseSpace->multidegrees(currentDegree,dedup);
+        for(size_t j=0;j<baseDegreeSize;j++){
+            currentDegree[j] -= twist[j];
+        }
+    }
+    size_t totalMds = 0;
+    for(auto& entry : mds)
+        totalMds += entry.size();
+    vector<vector<int> > ret(totalMds);
+    size_t index = 0;
+    for(int i=0;i<=d;i++){
+        for(size_t j=0;j<mds[i].size();j++){
+            ret[index].resize(baseSpace->mdegSize+2);
+            auto iter = copy_n(mds[i][j].begin(),baseSpace->mdegSize,ret[index].begin());
+            *(iter++)=i;
+            *(iter++)=d-i;
+            index++;
+        }
+    }
+    return ret;
+};

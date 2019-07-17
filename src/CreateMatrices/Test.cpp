@@ -57,6 +57,22 @@ TEST_CASE("Product multidegrees", "[Product]"){
     }
 }
 
+TEST_CASE("P1Bundle multidegrees",""){
+    P1Bundle p(new Pn(1),{1});
+    SECTION("multidegree count"){
+        REQUIRE(p.multidegrees({2,2},false).size() == 6);
+        REQUIRE(p.multidegrees({2,2},true).size() == 4);
+        REQUIRE(p.multidegrees({3,2},false).size() == 9);
+        REQUIRE(p.multidegrees({3,2},true).size() == 5);
+    }
+    SECTION("multidegree sizes"){
+        auto m = p.multidegrees({4,2},false);
+        REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return v.size()==p.mdegSize;}));
+        REQUIRE(p.mdegSize==4);
+        REQUIRE(p.degreeSize==2);
+    }
+}
+
 TEST_CASE("WedgeBasis","[WedgeBasis]"){
     Product tv({new Pn (3),new Pn (3)});
     SECTION("size"){
