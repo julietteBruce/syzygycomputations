@@ -665,9 +665,9 @@ ZZ4degs = (k,D,B)->(
 --Input: D,B as usual
 --Output:  a hash table BpH where BpH#k is the multigraded part of Bpoly of total degree k*D+B.
 buildBPolyHash = (D,B)->( 
-    Bexps0 := flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
-    Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
-    Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
+    Bexps0 := apply(toList(0..D_0),i->{i,D_0-i});
+    Bexps1 := apply(toList(0..D_1),i->{i,D_1-i});
+    Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> a|b));
     Bpoly := product(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
     N := ((D_0+1)*(D_1+1))*{D_0,D_1}+{B_0,B_1};
     topGuy := (N_0+N_1)//(D_0+D_1);
