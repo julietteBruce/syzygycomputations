@@ -665,11 +665,10 @@ buildBPolyHash = (D,B)->(
     Bexps0 := flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
     Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
     Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
-    Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    Bpoly := product(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
     N := ((D_0+1)*(D_1+1))*{D_0,D_1}+{B_0,B_1};
     topGuy := (N_0+N_1)//(D_0+D_1);
-    BpHM = new MutableHashTable;
-    scan(topGuy+1,k-> BpHM#k=0_A);
+    BpHM = new MutableHashTable from apply(topGuy+1,k-> k=>0_A);
     --tally apply(terms Bpoly, m-> (degree(m)//(D_0+D_1)) )
     scan(terms Bpoly, m->(
 	    BpHM#((degree m)_0//(D_0+D_1)) = BpHM#((degree m)_0//(D_0+D_1)) + m));
@@ -689,8 +688,7 @@ buildAHash = (B,D)->(
 		    t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3)))));
     mm := (ideal(t_0,t_1))^(N_0+1)+ (ideal(t_2,t_3))^(N_1+1); 
     AH = hashTable apply(topGuy+1,k->(
-	k => ((sum apply(k+1,i->(
-	(BpH#i)*(CH#(k-i))))%mm))
+	k => sum(k+1,i->(BpH#i)*(CH#(k-i)))%mm
 	));
     numCols :=  (D_0+1)*(D_1+1)-3;
     BBkeys0 := apply(toList(0..numCols),i-> (i,0)=>0);
@@ -705,15 +703,20 @@ buildAHash = (B,D)->(
     for k from 0 to (max keys AH) do(
 	coef = (-1)^(col)*AH#k;
 	--print coef;
-	if coef == 0 then sg = 0_ZZ;
-	if coef != 0 then sg = sub(coefficient(leadMonomial coef,coef),ZZ);
-	if sg >= 0 then ((T#(col,row) = coef); 
-	    (col= col+1));
-	if sg < 0 then (
+	sg := if coef == 0
+              then 0_ZZ
+	      else sub(coefficient(leadMonomial coef,coef),ZZ);
+	if sg >= 0
+        then (
+            T#(col,row) = coef;
+	    col= col+1
+            )
+        else (
 	    row = row +1;
-	    T#(col-1,row) = -coef);	
+	    T#(col-1,row) = -coef
+            );	
 	);	    
-    new HashTable from apply(toList(keys(T)), i-> i=>T#i)
+    new HashTable from T
     );
 
 
