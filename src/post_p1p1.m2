@@ -637,7 +637,7 @@ fixMultiBetti = (B,D,pathIn)->(
     )
 
 fixedTotalBetti = (H)->(
-    applyValues(H,v->if v != 0 then sub(v,{t_0=>1,t_1=>1,t_2=>1,t_3=>1}) else 0)
+    applyValues(H,v->(if v != 0 then sub(sub(v,A),{t_0=>1,t_1=>1,t_2=>1,t_3=>1}) else 0))
     )
 
 fixedSchurBetti = (H)->(
@@ -648,8 +648,6 @@ fileName = (B,D)->(
     toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
     )
 
-
-A = QQ[t_0,t_1,t_2,t_3,MonomialOrder => Lex];
 
 --Input: k an integer (between 0 and topGuy), D and B as usual
 --Output: the possible ZZ^4-degrees of total degree k*D+B.
@@ -721,7 +719,7 @@ buildAHash = (B,D)->(
 ---- H SHOULD BE THE OUTPUT OF fixMultiBetti
 makeOutputFiles =  (B,D,H)->(
     --  Writing the files
-    g = openOut ("M2OutputFiles/bettiF0_"|fileName(B,D)|".m2");
+    g = openOut ("../M2OutputFiles/bettiF0_"|fileName(B,D)|".m2");
     --g<< "--This file computes Betti tables for P^1P^1 for d = "|toString d|" and b = "|toString b;
     --g<< endl;
     g<< "A := QQ[t_0,t_1,t_2,t_3];";
@@ -741,10 +739,10 @@ makeOutputFiles =  (B,D,H)->(
     g<< endl;
     g<< "--sb represents the betti numbers as sums of Schur functors";
     g<< endl ;
-    g<< "sb"|fileName(B,D)|" = ";
-    g<< toExternalString fixedSchurBetti(H);
-    g<< ";";
-    g<< endl;
+    --g<< "sb"|fileName(B,D)|" = ";
+    --g<< toExternalString fixedSchurBetti(H);
+    --g<< ";";
+    --g<< endl;
     g<< "end;";    
     close g;    
     )
