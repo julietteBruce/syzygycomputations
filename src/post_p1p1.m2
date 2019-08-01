@@ -666,7 +666,7 @@ buildBPolyHash = (D,B)->(
     Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
     Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
     Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
-    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    N := ((D_0+1)*(D_1+1)-1)*{D_0,D_1}+{B_0,B_1};
     topGuy := (N_0+N_1)//(D_0+D_1);
     BpHM = new MutableHashTable;
     scan(topGuy+1,k-> BpHM#k=0_A);
@@ -681,14 +681,15 @@ buildBPolyHash = (D,B)->(
 --WATCHOUT!!!  Dan and Bobby will check soon.
 buildAHash = (B,D)->(
     BpH := buildBPolyHash(D,B);
-    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    N := ((D_0+1)*(D_1+1)-1)*{D_0,D_1}+{B_0,B_1};
     topGuy := (N_0+N_1)//(D_0+D_1);
+    --topGuy one too big??
     CH := hashTable apply(topGuy+1,k->(
 	    k=>sum(ZZ4degs(k,D,B),l->(
 		    t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3)))));
     mm := (ideal(t_0,t_1))^(N_0+1)+ (ideal(t_2,t_3))^(N_1+1); 
     AH = hashTable apply(topGuy+1,k->(
-	k => ((sum apply(k,i->(
+	k => ((sum apply(k+1,i->(
 	(BpH#i)*(CH#(k-i))))%mm))
 	));
     numCols :=  (D_0+1)*(D_1+1)-3;
