@@ -648,6 +648,9 @@ fileName = (B,D)->(
     toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
     )
 
+shortFileName = (B,D)->(
+    toString(B#0)|toString(B#1)|toString(D#0)|toString(D#1)
+    )
 
 --Input: k an integer (between 0 and topGuy), D and B as usual
 --Output: the possible ZZ^4-degrees of total degree k*D+B.
@@ -723,7 +726,7 @@ buildAHash = (B,D)->(
 ---- H SHOULD BE THE OUTPUT OF fixMultiBetti
 makeOutputFiles =  (B,D,H)->(
     --  Writing the files
-    g = openOut ("../M2OutputFiles/bettiF0_"|fileName(B,D)|".m2");
+    g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/bettiF0_"|shortFileName(B,D)|".m2");
     --g<< "--This file computes Betti tables for P^1P^1 for d = "|toString d|" and b = "|toString b;
     --g<< endl;
     g<< "A := QQ[t_0,t_1,t_2,t_3];";
@@ -731,22 +734,25 @@ makeOutputFiles =  (B,D,H)->(
     g<< endl;
     g<< "--tb stands for Total Betti numbers";
     g<< endl;
-    g<< "tb"|fileName(B,D)|" = ";
+    g<< "tb"|shortFileName(B,D)|" = ";
     g<< toExternalString fixedTotalBetti(H);
     g<< ";";
     g<< endl; 
-    g<< "--mb stands for Multigraded Betti numbers";
-    g<< endl ;
-    g<< "mb"|fileName(B,D)|" = ";
-    g<< toExternalString H;
-    g<< ";";
-    g<< endl;
-    g<< "--sb represents the betti numbers as sums of Schur functors";
-    g<< endl ;
+    --g<< "--sb represents the betti numbers as sums of Schur functors";
+    --g<< endl ;
     --g<< "sb"|fileName(B,D)|" = ";
     --g<< toExternalString fixedSchurBetti(H);
     --g<< ";";
     --g<< endl;
+    g<< "end;";
+    close g;    
+    g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/mgbettiF0_"|shortFileName(B,D)|".m2");
+    g<< "--mb stands for Multigraded Betti numbers";
+    g<< endl ;
+    g<< "mb"|shortFileName(B,D)|" = ";
+    g<< toExternalString H;
+    g<< ";";
+    g<< endl;
     g<< "end;";    
     close g;    
     )
