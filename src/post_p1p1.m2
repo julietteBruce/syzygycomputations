@@ -647,13 +647,10 @@ fileName = (B,D)->(
     toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
     )
 
-end;
-
-
 ---- H SHOULD BE THE OUTPUT OF fixMultiBetti
 makeOutputFiles =  (B,D,H)->(
     --  Writing the files
-    g = openOut ("M2OutputFiles/bettiF0_"|toString d|"_"|toString b|".m2");
+    g = openOut ("M2OutputFiles/bettiF0_"|fileName(B,D)|".m2");
     --g<< "--This file computes Betti tables for P^1P^1 for d = "|toString d|" and b = "|toString b;
     --g<< endl;
     g<< "A := QQ[t_0,t_1,t_2,t_3];";
@@ -681,6 +678,7 @@ makeOutputFiles =  (B,D,H)->(
     close g;    
     )
 
+end;
 
 
 
