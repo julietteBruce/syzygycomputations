@@ -144,6 +144,11 @@ fileName := (B,D)->(
     toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
     )
 
+shortFileName := (B,D)->(
+    toString(B#0)|toString(B#1)|toString(D#0)|toString(D#1)
+    )
+
+
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 ----- INPUT: (a,B,D) 
@@ -183,7 +188,7 @@ multiBetti (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;
     load getMgFileName(a,B,D);
-    value("mb"|fileName(B,D))
+    value("mb"|shortFileName(B,D))
     )
 
 
@@ -209,7 +214,7 @@ schurBetti (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1; 
     load getFileName(a,B,D);
-    value("sb"|fileName(B,D))
+    value("sb"|shortFileName(B,D))
     )
 
 
@@ -233,7 +238,7 @@ totalBetti (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     load getFileName(a,B,D);
-    value("tb"|fileName(B,D))
+    value("tb"|shortFileName(B,D))
     )
 
 
@@ -256,7 +261,7 @@ totalBettiTally (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;
     load getFileName(a,B,D);
-    makeBettiTally value("tb"|fileName(B,D))
+    makeBettiTally value("tb"|shortFileName(B,D))
     )
 
 --------------------------------------------------------------------
@@ -280,7 +285,7 @@ dominantWeightsBetti (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     load getFileName(a,B,D);
-    value("dw"|fileName(B,D))
+    value("dw"|shortFileName(B,D))
     )
 
 
@@ -306,7 +311,7 @@ lexWeightsBetti (ZZ,List,List) := (a,B,D) ->(
     if message_0 == false then return message_1;    
     --A := QQ[t_0,t_1,t_2, MonomialOrder => Lex];
     load getFileName(a,B,D);
-    value("lw"|fileName(B,D))
+    value("lw"|shortFileName(B,D))
     )
 
 
@@ -329,7 +334,7 @@ numDistinctRepsBetti  (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     load getFileName(a,B,D);
-    value("nr"|fileName(B,D))
+    value("nr"|shortFileName(B,D))
     )
 
 
@@ -353,7 +358,7 @@ numRepsBetti  (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     load getFileName(a,B,D);
-    value("nrm"|fileName(B,D))
+    value("nrm"|shortFileName(B,D))
     )
 
 --------------------------------------------------------------------
@@ -378,7 +383,7 @@ errorBetti  (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     load getFileName(a,B,D);
-    value("er"|fileName(B,D))
+    value("er"|shortFileName(B,D))
     )
 
 --------------------------------------------------------------------
@@ -398,7 +403,7 @@ bsCoeffs  (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     load getFileName(a,B,D);
-    value("bs"|fileName(B,D))
+    value("bs"|shortFileName(B,D))
     )
 
 
