@@ -437,3 +437,4 @@ installPackage "HirzebruchSyzygies"
 check "HirzebruchSyzygies"
 viewHelp SchurVeronese
 totalBetti(0,{0,0},{2,4})
+totalBettiTally(0,{0,0},{2,4})
