@@ -608,6 +608,7 @@ koszulDual = (p,q,a,B,D) ->(
 
 --- This is a function so that fixMultiBetti can take a path to the BettiSeries files as an input
 --- Input: B,D as usual, startPath is the beginning of the path where you are storing the bettiSeries files
+---  i = {p,q} corresponding to the K_{p,q}-group.
 ---    	   we always assume the files are stored in a file called step1_(D_0)_(D_1)/b_(B_0)_(B_1)/betti/bettiSeries etc.
 ---    	   so the startPath is just the path to where this folder is stored
 --- Output: The correct path to the file containing the Betti Series for B, D fixed and i=(i_0,i_1) the betti number.
