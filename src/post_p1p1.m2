@@ -666,7 +666,7 @@ buildBPolyHash = (D,B)->(
     Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
     Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
     Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
-    N := ((D_0+1)*(D_1+1)-1)*{D_0,D_1}+{B_0,B_1};
+    N := ((D_0+1)*(D_1+1))*{D_0,D_1}+{B_0,B_1};
     topGuy := (N_0+N_1)//(D_0+D_1);
     BpHM = new MutableHashTable;
     scan(topGuy+1,k-> BpHM#k=0_A);
@@ -681,7 +681,7 @@ buildBPolyHash = (D,B)->(
 --WATCHOUT!!!  Dan and Bobby will check soon.
 buildAHash = (B,D)->(
     BpH := buildBPolyHash(D,B);
-    N := ((D_0+1)*(D_1+1)-1)*{D_0,D_1}+{B_0,B_1};
+    N := ((D_0+1)*(D_1+1))*{D_0,D_1}+{B_0,B_1};
     topGuy := (N_0+N_1)//(D_0+D_1);
     --topGuy one too big??
     CH := hashTable apply(topGuy+1,k->(
@@ -731,6 +731,12 @@ makeOutputFiles =  (B,D,H)->(
     g<< "tb"|fileName(B,D)|" = ";
     g<< toExternalString fixedTotalBetti(H);
     g<< ";";
+    g<< endl; 
+    g<< "--mb stands for Multigraded Betti numbers";
+    g<< endl ;
+    g<< "mb"|fileName(B,D)|" = ";
+    g<< toExternalString H;
+    g<< ";";
     g<< endl;
     g<< "--sb represents the betti numbers as sums of Schur functors";
     g<< endl ;
@@ -738,18 +744,6 @@ makeOutputFiles =  (B,D,H)->(
     --g<< toExternalString fixedSchurBetti(H);
     --g<< ";";
     --g<< endl;
-    g<< "end;";    
-    close g;    
-    g = openOut ("../M2OutputFiles/mgbettiF0_"|fileName(B,D)|".m2");
-    g<< "A := QQ[t_0,t_1,t_2,t_3];";
-    g<< "--mb stands for Multigraded Betti numbers";
-    g<< endl;
-    g<< "mb"|fileName(B,D)|" = ";
-    g<< toExternalString H;
-    g<< ";";
-    g<< endl;
-    g<< "--sb represents the betti numbers as sums of Schur functors";
-    g<< endl ;
     g<< "end;";    
     close g;    
     )
