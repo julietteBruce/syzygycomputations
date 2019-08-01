@@ -624,7 +624,8 @@ pathToBettiSeries = (startPath,B,D,i)->(
 --- Input: B,D as usual, pathIn is the path to where you are storing
 ---    	   the bettiSeries files. See input description for pathToBettiSeries for further formatting details.
 fixMultiBetti = (B,D,pathIn)->(
-    H = new MutableHashTable from naiveMultiBetti(B,D);
+    --H = new MutableHashTable from naiveMultiBetti(B,D);
+    H = new MutableHashTable from buildAHash(B,D);
     L1 = delete(,apply(relevantRange(0,B,D),i->(if i#1 == 1 then i)));
     scan(L1,i->(
 	    f := value get (pathToBettiSeries(pathIn,B,D,i));
@@ -647,13 +648,80 @@ fileName = (B,D)->(
     toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
     )
 
-end;
+
+A = QQ[t_0,t_1,t_2,t_3,MonomialOrder => Lex];
+
+--Input: k an integer (between 0 and topGuy), D and B as usual
+--Output: the possible ZZ^4-degrees of total degree k*D+B.
+ZZ4degs = (k,D,B)->(
+    E = k*D+B;
+    flatten apply(E_0+1,i->(
+	    apply(E_1+1,j->(
+		    {i,E_0-i,j,E_1-j}
+		    ))))
+    );
+
+--Input: D,B as usual
+--Output:  a hash table BpH where BpH#k is the multigraded part of Bpoly of total degree k*D+B.
+buildBPolyHash = (D,B)->( 
+    Bexps0 := flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
+    Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
+    Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
+    Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    topGuy := (N_0+N_1)//(D_0+D_1);
+    BpHM = new MutableHashTable;
+    scan(topGuy+1,k-> BpHM#k=0_A);
+    --tally apply(terms Bpoly, m-> (degree(m)//(D_0+D_1)) )
+    scan(terms Bpoly, m->(
+	    BpHM#((degree m)_0//(D_0+D_1)) = BpHM#((degree m)_0//(D_0+D_1)) + m));
+    new HashTable from BpHM
+    )
+
+--Input: D,B as usual
+--Output:  a hashtable AH
+--WATCHOUT!!!  Dan and Bobby will check soon.
+buildAHash = (B,D)->(
+    BpH := buildBPolyHash(D,B);
+    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    topGuy := (N_0+N_1)//(D_0+D_1);
+    CH := hashTable apply(topGuy+1,k->(
+	    k=>sum(ZZ4degs(k,D,B),l->(
+		    t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3)))));
+    mm := (ideal(t_0,t_1))^(N_0+1)+ (ideal(t_2,t_3))^(N_1+1); 
+    AH = hashTable apply(topGuy+1,k->(
+	k => ((sum apply(k,i->(
+	(BpH#i)*(CH#(k-i))))%mm))
+	));
+    numCols :=  (D_0+1)*(D_1+1)-3;
+    BBkeys0 := apply(toList(0..numCols),i-> (i,0)=>0);
+    BBkeys1 := apply(toList(1..numCols),i-> (i,1)=>0);
+    BBkeys2 := apply(toList(2..numCols),i-> (i,2)=>0);
+--    BBkeys3 := apply(toList(3..topGuy),i-> (i,3)=>0);
+    emptyTable := BBkeys0|BBkeys1|BBkeys2;
+    T := new MutableHashTable from emptyTable;
+    --  Not exactly sure how high k should go, we put a guess in for now
+    col = 0;
+    row = 0;
+    for k from 0 to (max keys AH) do(
+	coef = (-1)^(col)*AH#k;
+	--print coef;
+	if coef == 0 then sg = 0_ZZ;
+	if coef != 0 then sg = sub(coefficient(leadMonomial coef,coef),ZZ);
+	if sg >= 0 then ((T#(col,row) = coef); 
+	    (col= col+1));
+	if sg < 0 then (
+	    row = row +1;
+	    T#(col-1,row) = -coef);	
+	);	    
+    new HashTable from apply(toList(keys(T)), i-> i=>T#i)
+    );
 
 
 ---- H SHOULD BE THE OUTPUT OF fixMultiBetti
 makeOutputFiles =  (B,D,H)->(
     --  Writing the files
-    g = openOut ("M2OutputFiles/bettiF0_"|toString d|"_"|toString b|".m2");
+    g = openOut ("M2OutputFiles/bettiF0_"|fileName(B,D)|".m2");
     --g<< "--This file computes Betti tables for P^1P^1 for d = "|toString d|" and b = "|toString b;
     --g<< endl;
     g<< "A := QQ[t_0,t_1,t_2,t_3];";
@@ -681,6 +749,7 @@ makeOutputFiles =  (B,D,H)->(
     close g;    
     )
 
+end;
 
 
 

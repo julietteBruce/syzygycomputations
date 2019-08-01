@@ -388,6 +388,53 @@ naiveBetti = (B,D) ->(
     Betti
     );
 
+--Setup
+A = QQ[t_0,t_1,t_2,t_3,MonomialOrder => Lex];
 
+--Input: k an integer (between 0 and topGuy), D and B as usual
+--Output: the possible ZZ^4-degrees of total degree k*D+B.
+ZZ4degs = (k,D,B)->(
+    E = k*D+B;
+    flatten apply(E_0+1,i->(
+	    apply(E_1+1,j->(
+		    {i,E_0-i,j,E_1-j}
+		    ))))
+    );
+
+--Input: D,B as usual
+--Output:  a hash table BpH where BpH#k is the multigraded part of Bpoly of total degree k*D.
+buildBPolyHash = (D,B)->( 
+    Bexps0 := flatten apply(toList(0..D_0),i->({{i,D_0-i}}));
+    Bexps1 := flatten apply(toList(0..D_1),i->({{i,D_1-i}}));
+    Bexps := flatten apply(Bexps0,a->apply(Bexps1,b-> flatten{a,b}));
+    Bpoly := product apply(Bexps,l-> 1 - 1*t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3));
+    BpHM = new MutableHashTable;
+    scan(topGuy+1,k-> BpHM#k=0_A);
+    --tally apply(terms Bpoly, m-> (degree(m)//(D_0+D_1)) )
+    scan(terms Bpoly, m->(
+	    BpHM#((degree m)_0//(D_0+D_1)) = BpHM#((degree m)_0//(D_0+D_1)) + m));
+    new HashTable from BpHM
+    )
+
+--Input: D,B as usual
+--Output:  a hashtable AH
+buildAHash = (D,B)->(
+    BpH := buildBPolyHash(D,B);
+    N := (D_0+1)*(D_1+1)*{D_0,D_1}+{B_0,B_1};
+    topGuy := (N_0+N_1)//(D_0+D_1);
+    CH := hashTable apply(topGuy+1,k->(
+	    k=>sum(ZZ4degs(k,D,B),l->(
+		    t_0^(l_0)*t_1^(l_1)*t_2^(l_2)*t_3^(l_3)))));
+    mm := (ideal(t_0,t_1))^(N_0+1)+ (ideal(t_2,t_3))^(N_1+1); 
+    hashTable apply(topGuy+1,k->(
+	k => ((sum apply(k,i->(
+	(BpH#i)*(CH#(k-i))))%mm))
+	))  
+    );
 
 end
+restart
+load "hilbP1P1_V2.m2"
+(D,B) = ({2,4},{0,0})
+time AH = buildAHash(D,B);
+
