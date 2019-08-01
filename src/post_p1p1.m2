@@ -730,12 +730,6 @@ makeOutputFiles =  (B,D,H)->(
     g<< "tb"|fileName(B,D)|" = ";
     g<< toExternalString fixedTotalBetti(H);
     g<< ";";
-    g<< endl; 
-    g<< "--mb stands for Multigraded Betti numbers";
-    g<< endl ;
-    g<< "mb"|fileName(B,D)|" = ";
-    g<< toExternalString H;
-    g<< ";";
     g<< endl;
     g<< "--sb represents the betti numbers as sums of Schur functors";
     g<< endl ;
@@ -743,6 +737,18 @@ makeOutputFiles =  (B,D,H)->(
     --g<< toExternalString fixedSchurBetti(H);
     --g<< ";";
     --g<< endl;
+    g<< "end;";    
+    close g;    
+    g = openOut ("../M2OutputFiles/mgbettiF0_"|fileName(B,D)|".m2");
+    g<< "A := QQ[t_0,t_1,t_2,t_3];";
+    g<< "--mb stands for Multigraded Betti numbers";
+    g<< endl;
+    g<< "mb"|fileName(B,D)|" = ";
+    g<< toExternalString H;
+    g<< ";";
+    g<< endl;
+    g<< "--sb represents the betti numbers as sums of Schur functors";
+    g<< endl ;
     g<< "end;";    
     close g;    
     )
