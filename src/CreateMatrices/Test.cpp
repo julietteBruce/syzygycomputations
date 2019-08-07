@@ -7,12 +7,19 @@
 using namespace std;
 
 bool isNonDecreasing(const vector<int>& v, size_t start, size_t stop){
-    for(size_t i = start;i<stop;i++){
+    for(size_t i = start+1;i<stop;i++){
         if(v[i]<v[i-1]){
             return false;
         }
     }
     return true;
+}
+
+int sum(const vector<int>& v){
+    int ret = 0;
+    for(int i : v)
+        ret += i;
+    return ret;
 }
 
 TEST_CASE("Pn multidegrees", "[Pn]"){
@@ -26,6 +33,10 @@ TEST_CASE("Pn multidegrees", "[Pn]"){
     SECTION("multidegree sizes"){
         auto m = p.multidegrees({3},false);
         REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return v.size()==p.mdegSize;}));
+    }
+    SECTION("multidegree sums"){
+        auto m = p.multidegrees({3},false);
+        REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return sum(v)==3;}));
     }
     SECTION("deduped multidegrees are non-decreasing"){
         auto m = p.multidegrees({5},true);
@@ -47,6 +58,11 @@ TEST_CASE("Product multidegrees", "[Product]"){
         REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return v.size()==p.mdegSize;}));
         REQUIRE(p.mdegSize==8);
         REQUIRE(p.degreeSize==2);
+    }
+    SECTION("multidegree sums"){
+        auto m = p.multidegrees({3,3},false);
+        //This is an imperfect test
+        REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return sum(v)==6;}));
     }
     SECTION("deduped multidegrees are non-decreasing"){
         auto m = p.multidegrees({3,3},true);

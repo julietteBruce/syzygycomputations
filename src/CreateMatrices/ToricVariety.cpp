@@ -62,23 +62,21 @@ Product::Product(const vector<ToricVariety* >& _tvs) :
 
 vector<vector<int> > Product::multidegrees(const vector<int>& degree, bool dedup) const {
     vector<vector<vector<int> > > mdParts(tvs.size());
-    size_t size = 0;
     auto degreeIter = degree.begin();
     for(size_t i=0;i<tvs.size();i++){
         int length = tvs[i]->degreeSize;
         vector<int> degreePiece(degreeIter,degreeIter+length);
         degreeIter+=length;
         mdParts[i] = tvs[i]->multidegrees(degreePiece, dedup);
-        size += tvs[i]->mdegSize;
     }
     vector<vector<int> > ret;
     vector<size_t> indicies(tvs.size(),0);
-    vector<int> currMd(size);
+    vector<int> currMd(mdegSize);
     while(true){
         //create the multidegree
         auto iter = currMd.begin();
         for(size_t i = 0;i<indicies.size();i++){
-            vector<int> &currPiece = mdParts[i][indicies[i]];
+            const vector<int> &currPiece = mdParts[i][indicies[i]];
             iter = copy(currPiece.begin(),currPiece.end(),iter);
         }
         ret.push_back(currMd);
