@@ -726,7 +726,7 @@ buildAHash = (B,D)->(
 ---- H SHOULD BE THE OUTPUT OF fixMultiBetti
 makeOutputFiles =  (B,D,H)->(
     --  Writing the files
-    g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/bettiF0_"|shortFileName(B,D)|".m2");
+    g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/bettiF0_"|fileName(B,D)|".m2");
     --g<< "--This file computes Betti tables for P^1P^1 for d = "|toString d|" and b = "|toString b;
     --g<< endl;
     g<< "A := QQ[t_0,t_1,t_2,t_3];";
@@ -746,7 +746,10 @@ makeOutputFiles =  (B,D,H)->(
     --g<< endl;
     g<< "end;";
     close g;    
-    g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/mgbettiF0_"|shortFileName(B,D)|".m2");
+    g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/mgbettiF0_"|fileName(B,D)|".m2");
+    g<< "A := QQ[t_0,t_1,t_2,t_3];";
+    -- need to add bit to initialize A = QQ[t_0,t_1,t_2];
+    g<< endl;
     g<< "--mb stands for Multigraded Betti numbers";
     g<< endl ;
     g<< "mb"|shortFileName(B,D)|" = ";
