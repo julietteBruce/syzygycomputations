@@ -708,7 +708,7 @@ buildAHash = (B,D)->(
 	--print coef;
 	sg := if coef == 0
               then 0_ZZ
-	      else sub(coefficient(leadMonomial coef,coef),ZZ);
+	      else sub(leadCoefficient coef,ZZ);
 	if sg >= 0
         then (
             T#(col,row) = coef;
