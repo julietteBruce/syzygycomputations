@@ -744,7 +744,7 @@ makeOutputFiles =  (B,D,H)->(
     g<< endl; 
     g<< "--sb represents the betti numbers as sums of Schur functors";
     g<< endl ;
-    g<< "sb"|fileName(B,D)|" = ";
+    g<< "sb"|shortFileName(B,D)|" = ";
     g<< toExternalString fixedSchurBetti(H);
     g<< ";";
     g<< endl;
