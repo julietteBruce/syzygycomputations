@@ -636,12 +636,16 @@ fixMultiBetti = (B,D,pathIn)->(
     H = new HashTable from H
     )
 
+fixValues = (H,A)->(
+    applyValues(H,v-> sub(v,A))
+    )
+
 fixedTotalBetti = (H)->(
     applyValues(H,v->(if v != 0 then sub(sub(v,A),{t_0=>1,t_1=>1,t_2=>1,t_3=>1}) else 0))
     )
 
 fixedSchurBetti = (H)->(
-    applyValues(H,v->if v != 0 then (decomposeHilb(v))_0 else 0)
+    applyValues(H,v-> (decomposeHilb(v))_0)
     )
 
 fileName = (B,D)->(
@@ -738,12 +742,12 @@ makeOutputFiles =  (B,D,H)->(
     g<< toExternalString fixedTotalBetti(H);
     g<< ";";
     g<< endl; 
-    --g<< "--sb represents the betti numbers as sums of Schur functors";
-    --g<< endl ;
-    --g<< "sb"|fileName(B,D)|" = ";
-    --g<< toExternalString fixedSchurBetti(H);
-    --g<< ";";
-    --g<< endl;
+    g<< "--sb represents the betti numbers as sums of Schur functors";
+    g<< endl ;
+    g<< "sb"|fileName(B,D)|" = ";
+    g<< toExternalString fixedSchurBetti(H);
+    g<< ";";
+    g<< endl;
     g<< "end;";
     close g;    
     g = openOut ("../HirzebruchSyzygies/HirzebruchSyzygies/mgbettiF0_"|fileName(B,D)|".m2");
