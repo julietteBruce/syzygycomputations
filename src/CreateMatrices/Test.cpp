@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 #include "ToricVariety.h"
 #include "Basis.h"
+#include "ChainMap.h"
 #include <vector>
 #include <algorithm>
 
@@ -38,6 +39,20 @@ TEST_CASE("Pn multidegrees", "[Pn]"){
         auto m = p.multidegrees({3},false);
         REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return sum(v)==3;}));
     }
+    SECTION("multidegree values"){
+        REQUIRE(p.multidegrees({2},false) ==
+                vector<vector<int>>({{0,0,0,2},
+                                     {0,0,1,1},
+                                     {0,0,2,0},
+                                     {0,1,0,1},
+                                     {0,1,1,0},
+                                     {0,2,0,0},
+                                     {1,0,0,1},
+                                     {1,0,1,0},
+                                     {1,1,0,0},
+                                     {2,0,0,0}}));
+    }
+
     SECTION("deduped multidegrees are non-decreasing"){
         auto m = p.multidegrees({5},true);
         REQUIRE(all_of(m.begin(),m.end(),
@@ -64,6 +79,14 @@ TEST_CASE("Product multidegrees", "[Product]"){
         //This is an imperfect test
         REQUIRE(all_of(m.begin(),m.end(),[&p](vector<int> v){return sum(v)==6;}));
     }
+    SECTION("multidegree values"){
+        REQUIRE(p.multidegrees({2,2},true) ==
+                vector<vector<int>>({{0,0,0,2,0,0,0,2},
+                                     {0,0,1,1,0,0,0,2},
+                                     {0,0,0,2,0,0,1,1},
+                                     {0,0,1,1,0,0,1,1}}));
+    }
+
     SECTION("deduped multidegrees are non-decreasing"){
         auto m = p.multidegrees({3,3},true);
         REQUIRE(all_of(m.begin(),m.begin(),
@@ -117,5 +140,19 @@ TEST_CASE("WedgeBasis","[WedgeBasis]"){
             REQUIRE(iter.getCurr()==basis.unrank(i));
             i++;
         }while(iter.next());
+    }
+}
+
+TEST_CASE("ChainMap","[ChainMap]"){
+    Product var({new Pn(1),new Pn(1)});
+    vector<int> degree = {2,2};
+    ToricChainMap chainMap(var,degree,3);
+    WedgeBasis codomain(createToricWedgeBasis(var,degree,2));
+    SECTION("image"){
+        vector<long long> img = chainMap.computeTrimmedImage({1,2,3},{10,10,10,10});
+        REQUIRE(img.size()==3);
+        REQUIRE(codomain.unrank(img[0])==vector<int>{2,3});
+        REQUIRE(codomain.unrank(img[1])==vector<int>{1,3});
+        REQUIRE(codomain.unrank(img[2])==vector<int>{1,2});
     }
 }

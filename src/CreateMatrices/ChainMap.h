@@ -24,7 +24,7 @@ class ToricChainMap : public ChainMap {
 public:
     ToricChainMap(ToricVariety& tv, const std::vector<int>& degree, int p)
         : ChainMap(createToricWedgeBasis(tv,degree,p),
-                   createToricWedgeBasis(tv,degree,p)) {}
+                   createToricWedgeBasis(tv,degree,p-1)) {}
 };
 
 class PnChainMap : public ChainMap{
