@@ -438,3 +438,11 @@ check "HirzebruchSyzygies"
 viewHelp SchurVeronese
 totalBetti(0,{0,0},{2,4})
 totalBettiTally(0,{0,0},{2,4})
+
+totalBettiTally(0,{0,0},{2,4})
+totalBettiTally(0,{0,0},{2,5})
+totalBettiTally(0,{0,0},{3,3})
+
+(schurBetti(0,{0,0},{2,4}))#(11,1)
+(schurBetti(0,{0,0},{2,5}))#(14,1)
+(schurBetti(0,{0,0},{3,3}))#(11,1)
