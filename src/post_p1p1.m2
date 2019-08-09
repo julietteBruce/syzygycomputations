@@ -618,6 +618,33 @@ pathToBettiSeries = (startPath,B,D,i)->(
     )
 
 
+
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: a list of pairs of integers (p,q)
+-----
+----- OUPUT: a list of pairs of integers (p,q)
+-----
+----- DESCRIPTION: This function takes the output of relevantRange 
+----- and deletes (p,q) if q is the largest value along the diagonal
+----- p+q = constant. This matches the betti data computed in step1
+----- 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+relevantRangeTrimmed  = rr -> (
+    sumPQ := unique apply(rr, pq -> pq#0 + pq#1);
+    rrSplit := for s in sumPQ list (for i from 0 to #rr-1 list (if rr#i#0 + rr#i#1 != s then continue else  rr#i  )  );
+    rrSplitSort := apply(rrSplit, l -> sort l );
+    rrSplitSortTrimmed := apply(rrSplitSort, l-> drop(l,1));
+    return flatten rrSplitSortTrimmed
+    )
+
+
+
 --- WARNING THIS IS HARDCODED FOR B={0,0},AND 
 --- ASSUMES WE READ IN THE FIRST ROW.
 --- THE PATH IS DEFINITELY WRONG
@@ -625,8 +652,9 @@ pathToBettiSeries = (startPath,B,D,i)->(
 ---    	   the bettiSeries files. See input description for pathToBettiSeries for further formatting details.
 fixMultiBetti = (B,D,pathIn)->(
     --H = new MutableHashTable from naiveMultiBetti(B,D);
-    H = new MutableHashTable from buildAHash(B,D);
-    L1 = delete(,apply(relevantRange(0,B,D),i->(if i#1 == 1 then i)));
+    H := new MutableHashTable from buildAHash(B,D);
+    L1 := relevantRangeTrimmed(relevantRange(0,B,D));
+--    L1 = delete(,apply(relevantRange(0,B,D),i->(if i#1 == 1 then i)));
     scan(L1,i->(
 	    f := value get (pathToBettiSeries(pathIn,B,D,i));
 	    fOLD := H#i;
