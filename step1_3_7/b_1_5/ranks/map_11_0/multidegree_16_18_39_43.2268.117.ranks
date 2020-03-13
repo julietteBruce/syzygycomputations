@@ -1,0 +1,13 @@
+
+Current total memory usage: 6382.8MB, failed memory request: 1151.3MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+Current total memory usage: 6382.8MB, failed memory request: 1151.3MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+In file "src/ranks.magma", line 18, column 9:
+>> entries := [];
+           ^
+User error: bad syntax

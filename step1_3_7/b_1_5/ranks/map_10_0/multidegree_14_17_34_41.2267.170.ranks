@@ -1,0 +1,17 @@
+
+Current total memory usage: 9860.8MB, failed memory request: 1946.1MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+Current total memory usage: 9860.8MB, failed memory request: 1946.1MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+Current total memory usage: 9860.8MB, failed memory request: 1946.1MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+In file "src/ranks.magma", line 30, column 13:
+>> print Rank(M: MakeWider);
+               ^
+User error: bad syntax

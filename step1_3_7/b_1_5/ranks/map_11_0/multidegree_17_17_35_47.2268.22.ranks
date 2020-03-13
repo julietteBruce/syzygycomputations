@@ -1,0 +1,13 @@
+
+Current total memory usage: 16408.5MB, failed memory request: 3289.3MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+Current total memory usage: 16408.5MB, failed memory request: 3289.3MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+
+In file "src/ranks.magma", line 28, column 3:
+>> M := SparseMatrix(F, rows, cols, entries);
+     ^
+User error: bad syntax

@@ -1,0 +1,5 @@
+
+Current total memory usage: 41439.7MB, failed memory request: 24861.2MB
+System error: Out of memory.
+All virtual memory has been exhausted so Magma cannot perform this statement.
+418381

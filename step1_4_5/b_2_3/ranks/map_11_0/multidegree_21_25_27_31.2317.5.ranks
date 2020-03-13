@@ -1,0 +1,6 @@
+
+In file "src/ranks.magma", line 23, column 33:
+>>     Append(~entries,<e[1],e[2],e[3]>);
+                                   ^
+Runtime error in '[]': Index 1 (3) should be in the range [1 .. 2]
+
