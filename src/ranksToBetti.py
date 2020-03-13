@@ -45,16 +45,37 @@ def rankDict(pq_list):
 
 V4=[(1,0,2,3),(0,1,3,2),(1,0,3,2)]
 
+
+def RepresentsInt(s):
+    try: 
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
+def infDifference(a,b):
+    if RepresentsInt(a) and RepresentsInt(b):
+        return a-b
+    else:
+        return "infinity"
+
+
+
+
 def betti_pq(p,q,rank_dict):
     bettiPQ={}
     for md in rank_dict[(p,q)].keys():
         if (p+1,q-1) not in rank_dict.keys():
-            bettiPQ[md] = rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0]
+            bettiPQ[md] = infDifference(rank_dict[(p,q)][md][1], rank_dict[(p,q)][md][0])
+            ## bettiPQ[md] = rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0]
         else:
             if md not in rank_dict[(p+1,q-1)].keys():
-                bettiPQ[md] =  rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0]
+                bettiPQ[md] =  infDifference(rank_dict[(p,q)][md][1],rank_dict[(p,q)][md][0])
+                ##bettiPQ[md] =  rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0]
             else:
-                bettiPQ[md] = rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0] - rank_dict[(p+1,q-1)][md][0]
+                bettiPQ[md] = infDifference(infDifference(rank_dict[(p,q)][md][1],rank_dict[(p,q)][md][0]), rank_dict[(p+1,q-1)][md][0])
+                ##bettiPQ[md] = rank_dict[(p,q)][md][1] - rank_dict[(p,q)][md][0] - rank_dict[(p+1,q-1)][md][0]
         for s in V4:
             bettiPQ[(md[s[0]],md[s[1]],md[s[2]],md[s[3]])] = bettiPQ[md]
     return bettiPQ
