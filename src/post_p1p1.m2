@@ -790,7 +790,21 @@ makeOutputFiles =  (B,D,H)->(
     g<< endl;
     g<< "end;";    
     close g;    
+
+    --- dataRange below is to update the file "dataRange.m2" that records all {B,D} for which 
+    --- our computation finished. !!! Not tested yet !!! worried about fixMultiBetti warnings... -Dan C.
+
+    dataRange = value get "../HirzebruchSyzygies/dataRange.m2";
+    
+    if not member({B,D}, dataRange) then {
+    	dataRange = dataRange|{{B,D}};
+    	g = openOut("../HirzebruchSyzygies/dataRange.m2");
+    	g <<  toExternalString dataRange;
+    	close g;
+    	}; 
     )
+
+
 
 end;
 
