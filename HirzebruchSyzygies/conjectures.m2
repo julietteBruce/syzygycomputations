@@ -1,6 +1,7 @@
 uninstallPackage "HirzebruchSyzygies"
 restart
 installPackage "HirzebruchSyzygies"
+needsPackage "BoijSoederberg"
 
 dataRange = value get "dataRange.m2"
 
@@ -198,3 +199,109 @@ secondLastSchurConjecture (ZZ,List,List,ZZ) := (a,B,D,q) ->(
 
 
 testConjecture(0,1,secondLastSchurConjecture,ShowFails=>true)
+
+
+
+
+----  Boij Soderberg coefficients
+
+koszulDual = (p,q,a,B,D) ->(
+    pDim := (D#0+1)*(D#1+1)-3;
+    dualB := D-B-{2,2};
+    (pDim - p, 2 - 1, a,dualB,D)
+    )
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (a,B,D)
+-----
+----- OUPUT: a sequence of integers. 
+-----
+----- DESCRIPTION: returns the Boij-Soederberg coefficients, following 
+----- the conventions in BEGY.
+-----
+----- CAVEAT: only works for a=0
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+BoijSoederbergCoefficients = method();
+BoijSoederbergCoefficients (ZZ,List,List) := (a,B,D) ->(
+    BT := totalBettiTally(a,B,D);
+    degs := decomposeDegrees(BT, TableEntries => HerzogKuhl);
+    return apply(degs, e->e#0);
+    )
+
+
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: If (a_1,...,a_k) are the  Boij-Soederberg coefficients 
+----- for B={b1,b2}, D={d1,d2}, then (a_k,..., a_1) are the  Boij-Soederberg 
+-----ccoefficients for B'={d1-b1-2, d2-b2-2} D'={d1,d2} (the Koszul Dual)
+-----
+----- INPUT: (B,D)
+-----
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+-----
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+BoijSoederbergCoefficientsKoszulDualConjecture = method();
+BoijSoederbergCoefficientsKoszulDualConjecture (List,List) := (B,D) -> (
+    BSC := BoijSoederbergCoefficients(0,B,D);
+    BSCDual := BoijSoederbergCoefficients(0,D-B-{2,2},D);
+    return (reverse BSCDual) == BSC
+    )
+BoijSoederbergCoefficientsKoszulDualConjecture({0,1},{2,5})
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: Boij-Soederberg coefficients for B={0,0}, D={2,k}
+----- are constant until the last one, which is larger. 
+-----
+----- INPUT: k
+-----
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+----- CAVEAT: to incorporate more data, assumes Boij Soederberg
+----- coefficients are reversed under koszual dual.
+-----
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+BoijSoederbergCoefficients2kConjecture = method();
+BoijSoederbergCoefficients2kConjecture (ZZ) := k -> (
+    BSC={};
+    test := false;
+    if member({{0,0},{2,k}}, dataRange) then (
+	BSC = BoijSoederbergCoefficients(0,{0,0},{2,k}); 
+	) else if member({{0,k-2},{2,k}}, dataRange) then (
+	BSC = reverse BoijSoederbergCoefficients(0,{0,k-2},{2,k});
+	) else (
+	return "No data"
+	);
+    lastEntry = BSC#-1;
+    if #BSC>1 then (
+	remainingEntries = unique for i in (0..#BSC-2) list BSC#i;
+	if #remainingEntries==1 and remainingEntries#0 < lastEntry then test = true;
+	) else (
+	test = true);
+    return test
+    )
+
+
+
+
+
+
