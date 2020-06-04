@@ -234,6 +234,15 @@ BoijSoederbergCoefficients (ZZ,List,List) := (a,B,D) ->(
 
 
 
+BoijSoederbergDegreeSequence = method();
+BoijSoederbergDegreeSequence (ZZ,List,List) := (a,B,D) ->(
+    BT := totalBettiTally(a,B,D);
+    degs := decomposeDegrees(BT, TableEntries => HerzogKuhl);
+    return apply(degs, e->e#1);
+    )
+
+
+BoijSoederbergDegreeSequence(0,{0,0},{2,5})
 
 
 --------------------------------------------------------------------
@@ -303,5 +312,31 @@ BoijSoederbergCoefficients2kConjecture (ZZ) := k -> (
 
 
 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: Boij-Soederberg coefficients for B={0,0}, D={2,d1}
+----- consist of the following. set [n] = [0,1,...,n-1] 
+----- The degree sequence is [3(d+1)]-{1,3d+1}, [3(d+1)]-{1,3d}, ..., [3(d+1)]-{1,2(d+1)+1} 
+----- the coefficient on [3(d+1)]-{1,3d+2-j-1} for j=0,...,d-3 is 2*(3*d1)!
+----- the coefficient on the last one, i.e., [3d+1]-{1,2d+3} is 2*(d1+2)*(3*d1)! 
 
+----- INPUT: k
+-----
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+BoijSoederberg2kConjecture = method();
+BoijSoederberg2kConjecture (ZZ) := d1 -> (
+    BT := totalBettiTally(0,{0,0},{2,d1});
+    degs := decomposeDegrees(BT, TableEntries => HerzogKuhl); 
+    conjDegs := for j in (0..d1-3) list(
+	(2*(3*d1)!, delete(3*d1+2-j-1, delete(1,toList(0..3*(d1+1)-1))) )
+	);
+    conjDegs = append(conjDegs, (2*(d1+2)*(3*d1)!, delete(2*d1+3, delete(1,toList(0..3*(d1+1)-1)))));
+    return conjDegs == degs    
+    )
