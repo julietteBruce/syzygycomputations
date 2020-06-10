@@ -3,6 +3,8 @@ restart
 installPackage "HirzebruchSyzygies"
 needsPackage "BoijSoederberg"
 
+
+
 dataRange = value get "dataRange.m2"
 
 --validData = {{{0,0},{1,1}},{{1,0},{1,1}},{{0,0},{1,2}},{{0,1},{1,2}},{{0,0},{1,3}},{{0,1},{1,3}},{{0,0},{1,4}},{{0,1},{1,4}},{{0,0},{1,5}},{{0,1},{1,5}},{{0,0},{1,6}},{{0,1},{1,6}},{{0,0},{1,7}},{{0,1},{1,7}},{{0,0},{1,8}},{{0,1},{1,8}},{{0,0},{2,2}},{{0,1},{2,2}},{{1,0},{2,
@@ -269,9 +271,48 @@ BoijSoederbergCoefficientsKoszulDualConjecture (List,List) := (B,D) -> (
 
 
 
+
+
+
+
+
+
+
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ CONJECTURE: Boij-Soederberg coefficients for B={0,b1}, D={2,d1}
+----- CONJECTURE: For B={0,0}, D={d0,d1} d0<=d1 the degree sequence is:
+----- (set [n] = [0,1,...,n-1]) 
+----- [(d0+1)*(d1+1)]-{1,(d0+1)(d1+1)-d1-j} for j=0,...,(d0-1)(d1-2)
+----- the coefficient on [3d1 +2]-{d1} is  2*(d1+1)*(3*d1)!
+----- the coefficient on the remaining ones is 2*(3*d1)! 
+
+----- INPUT: D a list of 2 integers D#0<=D#1
+-----
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+degSeqb00 = D-> for j in (0..(D#0-1)*(D#1-2)) list( sort(toList( set (0..(D#0+1)*(D#1+1)-1) - set{1,(D#0+1)*(D#1+1)-D#0-j} )))
+
+BoijSoederbergb00DegSequenceConjecture = method();
+BoijSoederbergb00DegSequenceConjecture (List) := D -> (
+    d0=D#0; d1=D#1;
+    BT := totalBettiTally(0,{0,0},{d0,d1});
+    degs := decomposeDegrees(BT, TableEntries => HerzogKuhl); 
+    return degSeqb00(D) == degs    
+    )
+
+
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: Boij-Soederberg coefficients for B={0,b1}, D={2,d1}, b1<=d1-2
 ----- consist of the following. set [n] = [0,1,...,n-1] 
 ----- The degree sequence is delta_j = [3(d1+1)] - {b1+1,3d1+1-j} for j = 0,..., d1-b1-2
 ----- and delta_j = [3(d1+1)] - {d1-j-1,2d1+b1+3} for j = d1-b1-1,...,d1-2.
@@ -345,4 +386,173 @@ BoijSoederberg2dLastBConjecture (ZZ) := d1 -> (
 
 
 
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={1,b1}, D={2,d1} 0 <= b1 <= d1-2, the degree sequence is:
+----- (set [n] = [0,1,...,n-1]) 
+----- [3d1+2]-{2b1+2-j} for j=0,...,b1+1
+
+----- INPUT: integers b1, d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+degSeq1b12d1 = (b1,d1)-> for j in (0..b1+1) list( sort(toList( set (0..3*d1+1) - set{2*b1+2-j} )))
+
+BoijSoederberg1b12d1DegSequenceConjecture = method();
+BoijSoederberg1b12d1DegSequenceConjecture (ZZ,ZZ) := (b1,d1) -> ( 
+    return degSeq1b12d1(b1,d1) == BoijSoederbergDegreeSequence(0,{1,b1},{2,d1})
+    )
+
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={1,b1}, D={2,d1} 0 <= b1 <= d1-2, the degree sequence is:
+----- (set [n] = [0,1,...,n-1]) 
+----- [3d1+2]-{2b1+2-j} for j=0,...,b1+1
+
+----- INPUT: integers b1, d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+degSeqLastb2d1 = d1-> for j in (0..d1-1) list( sort(toList( set (0..3*d1+1) - set{2*d1-j} )))
+
+BoijSoederbergDegSeqLastb2d1Conjecture = method();
+BoijSoederbergDegSeqLastb2d1Conjecture (ZZ) := d1 -> ( 
+    return degSeqLastb2d1(d1) == BoijSoederbergDegreeSequence(0,{1,d1-1},{2,d1})
+    )
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={1,0}, D={2,d1} d1>=2 the BS-coefficients are
+----- {2d1+2,2d1-2}(3d1)!
+----- INPUT: integer d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+coefficientb10d2  = d1-> {(2*d1+2)*(3*d1)!, (2*d1-2)*(3*d1)!} 
+
+BoijSoederbergCoefficientb10d2Conjecture = method();
+BoijSoederbergCoefficientb10d2Conjecture (ZZ) := d1 -> (
+    return coefficientb10d2(d1) == BoijSoederbergCoefficients(0,{1,0},{2,d1})
+    )
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={1,1}, D={2,d1} d1>=3 the BS-coefficients are
+----- {4d1(2d1+1)(2d1+2), 20(d1-1)d1(d1+1),8(d1-2)(d1-1)d1}(3*d1-2)! 
+
+----- INPUT: integer d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+coefficientb11d2 = d1->{(2*d1)*(2*d1+1)*(2*d1+2)*(3*d1-2)!, 20*(d1-1)*d1*(d1+1)*(3*d1-2)!,8*(d1-2)*(d1-1)*d1*(3*d1-2)! }
+
+BoijSoederbergCoefficientb11d2Conjecture = method();
+BoijSoederbergCoefficientb11d2Conjecture (ZZ) := d1 -> (
+    return coefficientb11d2(d1) == BoijSoederbergCoefficients(0,{1,1},{2,d1})
+    )
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={1,2}, D={2,d1} d1>=4  the BS-coefficients are
+----- {(8/3)d1(d1+1)(2d1-1)(2d1+1), (8/3)(8d1-7)(2*d1+1)(d1+1)d1, 
+-----    (2/3)d1(67*d1-61)(d1+1)(d1-2),10(d1-3)(d1-2)(d1-1)d1}(3*d1-3)! 
+
+----- INPUT: integer d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+coefficientb12d2 = d1->{(8/3)*d1*(d1+1)*(2*d1-1)*(2*d1+1)*(3*d1-3)!, (8/3)*(8*d1-7)*(2*d1+1)*(d1+1)*d1*(3*d1-3)!, 
+    (2/3)*d1*(67*d1-61)*(d1+1)*(d1-2)*(3*d1-3)!,10*(d1-3)*(d1-2)*(d1-1)*d1*(3*d1-3)! }
+
+BoijSoederbergCoefficientb12d2Conjecture = method();
+BoijSoederbergCoefficientb12d2Conjecture (ZZ) := d1 -> (
+    return coefficientb12d2(d1) == BoijSoederbergCoefficients(0,{1,2},{2,d1})
+    )
+
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={2,0}, D={3,d1} d1>=3 the BS-coefficients are
+----- {3(3d1+2)(d1+1), 6(d1-1)(d1+1), 9(d1-1)d1}(4d1)!
+
+
+----- INPUT: integer d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+coefficientb20d3 = d1 -> {3*(3*d1+2)*(d1+1)*(4*d1)!, 6*(d1-1)*(d1+1)*(4*d1)!, 9*(d1-1)*d1*(4*d1)!}
+
+BoijSoederbergCoefficientb20d3Conjecture = method();
+BoijSoederbergCoefficientb20d3Conjecture (ZZ) := d1 -> (
+    return coefficientb20d3(d1) == BoijSoederbergCoefficients(0,{2,0},{3,d1})
+    )
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- CONJECTURE: For B={3,0}, D={4,d1} d1>=4 the BS-coefficients are
+----- {8(4d1+3)(2d1+1)(d1+1), 8(4d1+3)(d1-1)(d1+1), 44d1(d1-1)(d1+1), 12d1(5d1+1)(d1-1)}(5d1)!
+
+
+----- INPUT: integer d1
+
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests whether the above conjecture 
+----- is true
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+coefficientb30d4 = d1 -> {8*(4*d1+3)*(2*d1+1)*(d1+1)*(5*d1)!, 8*(4*d1+3)*(d1-1)*(d1+1)*(5*d1)!, 44*d1*(d1-1)*(d1+1)*(5*d1)!, 12*d1*(5*d1+1)*(d1-1)*(5*d1)!}
+
+BoijSoederbergCoefficientb30d4Conjecture = method();
+BoijSoederbergCoefficientb30d4Conjecture (ZZ) := d1 -> (
+    return coefficientb20d3(d1) == BoijSoederbergCoefficients(0,{3,0},{4,d1})
+    )
 
