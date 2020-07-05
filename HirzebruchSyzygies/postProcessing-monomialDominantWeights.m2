@@ -297,8 +297,8 @@ updateOutputFiles =  (a,B,D)->(
 
 updateOutputFiles(0,{2,0},{3,4})
 
-dataRange1 = apply(dataRange, i->if 
+dataRange1 = sort delete(,apply(dataRange, i->if (i#0)#0 >1 then i))
 dataRange = value get "dataRange.m2"
-apply(dataRange,i->(
+apply(dataRange1,i->(
 	updateOutputFiles(0,(i#0),(i#1))
 	    ))
