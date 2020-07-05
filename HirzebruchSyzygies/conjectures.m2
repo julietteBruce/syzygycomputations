@@ -2,6 +2,7 @@ uninstallPackage "HirzebruchSyzygies"
 restart
 installPackage "HirzebruchSyzygies"
 needsPackage "BoijSoederberg"
+needsPackage "Posets";
 
 
 
@@ -203,81 +204,10 @@ secondLastSchurConjecture (ZZ,List,List,ZZ) := (a,B,D,q) ->(
 testConjecture(0,1,secondLastSchurConjecture,ShowFails=>true)
 
 
---------------------------------------------------------------------
---------------------------------------------------------------------
------ INPUT: (a,B,D,P)
------
------ OUPUT: A list of the monomial syzygies given by a list of 
------ multidegrees of the form {{m1.... mp},f} to represent the 
------ syzygy m1 ^.... ^mp \otimes f. 
------ 
------
------ DESCRIPTION: This function constructs all of the non-zero monomial
------ syzygies constructed in an alagous fashion to EEL18 for the entry 
------ K_{p,q}(F_a,B;D) where the input list P={p,q}.
------
------ CAVEAT: This function is currently only made for a=0, 
------ B={0,0}, and q != 0. If any other case is tested this function will
------ just return true. 
------
---------------------------------------------------------------------
---------------------------------------------------------------------
-monomialSyzygies = method();
-monomialSyzygies (ZZ,List,List,List) := (a,B,D,P) ->(
-    p := P#0;
-    q := P#1;
-    if a != 0 or B != {0,0} or q == 0 then true;
-    ---
-    S := QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
-    I := ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
-    ---
-    if q == 1 then (f = x_0^(D#0)*y_0^((D#1)-1)*y_1) ;
-    if q == 2 then (f = x_0^(2*(D#0)-1)*x_1*y_0^((D#1)-1)*y_1^((D#0)+1));
-    ---	
-    Q := quotient(I,f);
-    ---
-    B1 := unique flatten entries basis(D,S);
-    B2 := delete(,apply(B1, m->(if m%Q == 0 then m)));
-    L1 := toList (set B2 - set {x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
-    ---
-    R := QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}];
-    L2 := apply(L1,i->sub(i,R));
-    B3 := apply(B1,i->sub(i,R));
-    g := sub(f,R);
-    ---
-    D1 := delete(,apply(B3,m->(if g%m == 0 then m)));
-    D2 := toList (set D1 - set {x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
-    L3 := toList (set L2 - set D2);
-    apply(subsets(L3,p-(#D1)),L->(
-		{apply(L,i->degree i)|apply(D2,j->degree j),degree g}
-		))
-	)
 
---------------------------------------------------------------------
---------------------------------------------------------------------
------ INPUT: (a,B,D,P)
------
------ OUPUT: A list of the total weights monomial syzygies 
------ 
------
------ DESCRIPTION: This function uses the monomialSyzygies function to
------ constructs all of the non-zero monomial syzygies for the entry 
------ K_{p,q}(F_a,B;D) where the input list P={p,q}, and then computes
------ the total weight of each syzygy. 
------
------ CAVEAT: This function is currently only made for a=0, 
------ B={0,0}, and q != 0. If any other case is tested this function will
------ just return true. 
------
---------------------------------------------------------------------
---------------------------------------------------------------------
-monomialSyzygiesWeights = method();
-monomialSyzygiesWeights (ZZ,List,List,List) := (a,B,D,P) ->(
-    L := monomialSyzygies(a,B,D,P);
-    apply(L,i->(
-	    sum (i#0) + (i#1)
-	    ))
-    )
+
+
+
 
 
 
