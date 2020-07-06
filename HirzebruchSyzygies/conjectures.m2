@@ -273,6 +273,26 @@ multiplicityDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
 
 testConjecture(0,multiplicityDominantWeightsConjecture,ShowFails=>true)
 
+M = new MutableHashTable
+apply(dataRange,L->(
+	H := dominantWeightsBetti(0,(L#0),(L#1));
+	M#{L#1,L#0} = delete(,apply(keys H, k->(
+		if (H#k) != {} then (
+		    if (max apply((H#k),i->i#1)) > 1 then k
+		    ))));
+	))
+multiplicityDominantWeightsConjecture = method()
+multiplicityDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
+    if a != 0 then true
+    else (
+	H := dominantWeightsBetti(a,B,D);
+	L := delete(,apply(keys H, k->(
+		if (H#k) != {} then (
+		    if (max apply((H#k),i->i#1)) > 1 then k
+		    ))));
+	return max L <= 2
+	)
+    )
 
 
 ----  Boij Soderberg coefficients
