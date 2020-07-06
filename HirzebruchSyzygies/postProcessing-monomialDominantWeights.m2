@@ -92,8 +92,8 @@ monomialSyzygiesWeights (ZZ,List,List,Sequence) := (a,B,D,P) ->(
 --------------------------------------------------------------------
 dominanceComparison = method();
 dominanceComparison (List,List) := (L,P) ->(
-    C1 := (L#0)>(P#0) and ((L#0)+(L#1))>((P#0)+(P#1));
-    C2 := (L#2)>(P#2) and ((L#2)+(L#3))>((P#2)+(P#3));
+    C1 := (L#0)>=(P#0) and ((L#0)+(L#1))>=((P#0)+(P#1));
+    C2 := (L#2)>=(P#2) and ((L#2)+(L#3))>=((P#2)+(P#3));
     C1 and C2
     ) 
 
@@ -134,25 +134,28 @@ dominanceComparisonList (Sequence,List) := (L,P) ->(
 ----- constriucts the dominance poset on W where weights are 
 ----- compared using the product dominance order on P1xP1. 
 -----
+----- CAVEAT: Note that the internal comparision functions do the 
+----- opposite of what you expect. This is because of how the 
+----- Poset package is implmented.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 dominantWeightsPoset = method(Options => {Schur => false})
 dominantWeightsPoset (List) := opts -> (W)->(
     if W == {} then return G;
     if opts.Schur == false then (
-	dominanceComparison1 := (L,P) -> (
-            C1 := (L#0)>(P#0) and ((L#0)+(L#1))>((P#0)+(P#1));
-    	    C2 := (L#2)>(P#2) and ((L#2)+(L#3))>((P#2)+(P#3));
+	dominanceComparison1 := (P,L) -> (
+            C1 := (L#0)>=(P#0) and ((L#0)+(L#1))>=((P#0)+(P#1));
+    	    C2 := (L#2)>=(P#2) and ((L#2)+(L#3))>=((P#2)+(P#3));
     	    C1 and C2
         );
     	return poset(W,dominanceComparison1,AntisymmetryStrategy => "none")
     );
     if opts.Schur == true then (
 	dominanceComparison2 := (V,W) -> (
-	    L := V#0;
-	    P := W#0;    
-            C1 := (L#0)>(P#0) and ((L#0)+(L#1))>((P#0)+(P#1));
-    	    C2 := (L#2)>(P#2) and ((L#2)+(L#3))>((P#2)+(P#3));
+	    L := W#0;
+	    P := V#0;    
+            C1 := (L#0)>=(P#0) and ((L#0)+(L#1))>=((P#0)+(P#1));
+    	    C2 := (L#2)>=(P#2) and ((L#2)+(L#3))>=((P#2)+(P#3));
     	    C1 and C2
         );
     	return poset(W,dominanceComparison2,AntisymmetryStrategy => "none")
@@ -189,6 +192,8 @@ maximalDominantWeights (List) := opts -> (L)->(
 ----- a quick comparision is used to rule out some elements of W 
 ----- before constructing the dominance poset on this subset. 
 -----
+----- CAVEAT: Note we need to take unique of D1 becuase of the Poset
+----- package does not consider the post {a,a} to have a max. 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 dominantWeights = method(Options => {Schur => false})
@@ -198,7 +203,7 @@ dominantWeights (List) := opts -> (L)->(
     scan(L,l->(
 	    if dominanceComparisonList(l,D1) == true then D1 = D1|{l};
 	    ));
-	maximalDominantWeights(D1,Schur=>opts.Schur) 
+	maximalDominantWeights((unique D1),Schur=>opts.Schur) 
     );
 
 
@@ -232,32 +237,8 @@ fileName = (B,D)->(
     toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
     )
 
-updateOutputFiles =  (a,B,D)->(
-    --  Writing the files
-    g = openOutAppend ("HirzebruchSyzygies/bettiF0_"|fileName(B,D)|".m2");
-    g<< endl;
-    g<< "--dw stands for dominant weights";
-    g<< endl;
-    g<< "dw"|fileName1(B,D)|" = ";
-    g<< toExternalString entryToHashWrapperDomSchur(a,B,D);
-    g<< ";";
-    g<< endl;
-    g<< "--mw stands for monomial weights";
-    g<< endl;
-    g<< "mw"|fileName1(B,D)|" = ";
-    g<< toExternalString entryToHashWrapperMonomial(a,B,D);
-    g<< ";";
-    g<< endl;
-    g<< "--dmw stands for dominant monomial weights";
-    g<< endl;
-    g<< "dmw"|fileName1(B,D)|" = ";
-    g<< toExternalString entryToHashWrapperDomMonomial(a,B,D);
-    g<< ";";
-    g<< endl;
-    close g;    
-    )
 
-updateOutputFiles =  (a,B,D)->(
+updateOutputFilesDW =  (a,B,D)->(
     --  Writing the files
     g = openOut ("HirzebruchSyzygiesNew/bettiF0_"|fileName(B,D)|".m2");
     g<< "A := QQ[t_0,t_1,t_2,t_3];";
@@ -286,19 +267,20 @@ updateOutputFiles =  (a,B,D)->(
     --g<< toExternalString entryToHashWrapperMonomial(a,B,D);
     --g<< ";";
     --g<< endl;
-    g<< "--dmw stands for dominant monomial weights";
-    g<< endl;
-    g<< "dmw"|fileName1(B,D)|" = ";
-    g<< toExternalString entryToHashWrapperDomMonomial(a,B,D);
-    g<< ";";
-    g<< endl;
+    --g<< "--dmw stands for dominant monomial weights";
+    --g<< endl;
+    --g<< "dmw"|fileName1(B,D)|" = ";
+    --g<< toExternalString entryToHashWrapperDomMonomial(a,B,D);
+    --g<< ";";
+    --g<< endl;
+    g<< "end;";
     close g;    
     )
 
-updateOutputFiles(0,{2,0},{3,4})
 
-dataRange1 = sort delete(,apply(dataRange, i->if (i#0)#0 >1 then i))
 dataRange = value get "dataRange.m2"
-apply(dataRange1,i->(
-	updateOutputFiles(0,(i#0),(i#1))
+dataRange2 = delete({{2,0},{3,11}},delete({{2,1},{3,11}},delete({{1,2},{2,15}},delete({{1,2},{2,14}},delete({{1,0},{2,13}},dataRange)))))
+apply(dataRange2,i->(
+	print i;
+	updateOutputFilesDW(0,(i#0),(i#1));
 	    ))

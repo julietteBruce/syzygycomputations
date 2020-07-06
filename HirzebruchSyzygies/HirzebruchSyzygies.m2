@@ -62,8 +62,8 @@ export {
   "schurBetti", -- docs
   "totalBetti", -- docs
   "totalBettiTally",
-  "monomialWeights" -- docs
-  --"dominantWeightsBetti", -- docs
+  "monomialWeights", -- docs
+  "dominantWeightsBetti" -- docs
   --"lexWeightsBetti", --  docs
   --"numDistinctRepsBetti", -- docs
   --"numRepsBetti", -- docs
