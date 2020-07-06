@@ -45,6 +45,19 @@ testConjecture  (ZZ,ZZ,MethodFunction) := opts -> (a,q,F) ->(
 	); 
     )
 
+testConjecture  (ZZ,MethodFunction) := opts -> (a,F) ->(
+    if opts.ShowFails == false then (
+	return unique delete(,apply(dataRange,L->(
+		F(a,L#0,L#1)
+		))) 
+	);
+    if opts.ShowFails == true then ( 
+	return unique delete(,apply(dataRange,L->(
+		if F(a,L#0,L#1) != true then L
+		)))  
+	); 
+    )
+
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
@@ -200,14 +213,65 @@ secondLastSchurConjecture (ZZ,List,List,ZZ) := (a,B,D,q) ->(
 )
 
 
-
 testConjecture(0,1,secondLastSchurConjecture,ShowFails=>true)
 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (a,B,D)
+-----
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests our conjecture that there
+----- is exactly one dominant weight for each non-zero entry.
+-----
+----- CAVEAT: This conjecture is currently only made for a=0. If
+------ any other case is tested this function will just return true. 
+-----
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+
+numberDominantWeightsConjecture = method()
+numberDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
+    if a != 0 then true
+    else (
+	H := dominantWeightsBetti(a,B,D);
+	L := apply(keys H, k->( #(H#k)));
+	return max L <= 1
+	)
+    )
+
+testConjecture(0,numberDominantWeightsConjecture,ShowFails=>true)
 
 
 
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (a,B,D)
+-----
+----- OUPUT: True or False
+-----
+----- DESCRIPTION: This function tests our conjecture that the greatest
+----- multiplicity of a dominant weight is 2. 
+-----
+----- CAVEAT: This conjecture is currently only made for a=0. If
+------ any other case is tested this function will just return true. 
+-----
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+multiplicityDominantWeightsConjecture = method()
+multiplicityDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
+    if a != 0 then true
+    else (
+	H := dominantWeightsBetti(a,B,D);
+	L := flatten delete(,apply(keys H, k->(
+		if (H#k) != {} then (
+		    apply((H#k),i->i#1)
+		    ))));
+	return max L <= 2
+	)
+    )
 
-
+testConjecture(0,multiplicityDominantWeightsConjecture,ShowFails=>true)
 
 
 
