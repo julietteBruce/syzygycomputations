@@ -22,31 +22,31 @@ needsPackage "Posets";
 --------------------------------------------------------------------
 monomialSyzygies = method();
 monomialSyzygies (ZZ,List,List,Sequence) := (a,B,D,P) ->(
-    p := P#0;
-    q := P#1;
+    p = P#0;
+    q = P#1;
     if a != 0 or B != {0,0} then error;
     ---
-    S := QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
+    S = QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
     I := ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
     ---
     if q == 0 then return {};
-    if q == 1 then (f = x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^(B#1)) ;
-    if q == 2 then (f = x_0^(2*(D#0)-1)*x_1^(D#0)*y_0^((D#1)-1)*y_1^((D#1)+(B#1)+1));
+    if q == 1 then (f = x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)) ;
+    if q == 2 then (f = x_0^(2*(D#0)-1)*x_1^((B#0)+1)*y_0^((D#1)-1)*y_1^((D#1)+(B#1)+1));
     ---	
-    Q := quotient(I,f);
+    Q = quotient(I,f);
     ---
-    B1 := unique flatten entries basis(D,S);
-    B2 := delete(,apply(B1, m->(if m%Q == 0 then m)));
-    L1 := toList (set B2 - set {x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
+    B1 = unique flatten entries basis(D,S);
+    B2 = delete(,apply(B1, m->(if m%Q == 0 then m)));
+    L1  = toList (set B2 - set {x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
     ---
     R := QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}];
     L2 := apply(L1,i->sub(i,R));
     B3 := apply(B1,i->sub(i,R));
     g := sub(f,R);
     ---
-    D1 := delete(,apply(B3,m->(if g%m == 0 then m)));
-    D2 := toList (set D1 - set {x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
-    L3 := toList (set L2 - set D2);
+    D1 = delete(,apply(B3,m->(if g%m == 0 then m)));
+    D2 = toList (set D1 - set {x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
+    L3 = toList (set L2 - set D2);
     apply(subsets(L3,p-(#D1)),L->(
 		{apply(L,i->degree i)|apply(D2,j->degree j),degree g}
 		))
@@ -116,12 +116,12 @@ dominanceComparison (Sequence,Sequence) := (L,P) ->(
 --------------------------------------------------------------------
 dominanceComparisonList = method();
 dominanceComparisonList (List,List) := (L,P) ->(
-    for p in P do if dominanceComparison(L,p) == false then return false;
+    for p in P do if dominanceComparison(p,L) == true then return false;
     true
     ) 
 
 dominanceComparisonList (Sequence,List) := (L,P) ->(
-    for p in P do if dominanceComparison((L#0),(p#0)) == false then return false;
+    for p in P do if dominanceComparison((p#0),(L#0)) == true then return false;
     true
     ) 
 --------------------------------------------------------------------
@@ -267,12 +267,12 @@ updateOutputFilesDW =  (a,B,D)->(
     --g<< toExternalString entryToHashWrapperMonomial(a,B,D);
     --g<< ";";
     --g<< endl;
-    --g<< "--dmw stands for dominant monomial weights";
-    --g<< endl;
-    --g<< "dmw"|fileName1(B,D)|" = ";
-    --g<< toExternalString entryToHashWrapperDomMonomial(a,B,D);
-    --g<< ";";
-    --g<< endl;
+    g<< "--dmw stands for dominant monomial weights";
+    g<< endl;
+    g<< "dmw"|fileName1(B,D)|" = ";
+    g<< toExternalString entryToHashWrapperDomMonomial(a,B,D);
+    g<< ";";
+    g<< endl;
     g<< "end;";
     close g;    
     )

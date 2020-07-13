@@ -273,6 +273,70 @@ multiplicityDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
 
 testConjecture(0,multiplicityDominantWeightsConjecture,ShowFails=>true)
 
+totalBettiTally(0,{0,0},{2,3})
+
+(dominantWeightsBetti(0,{0,0},{2,3}))#(9,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(8,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(7,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(6,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(5,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(4,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(3,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(2,1)
+(dominantWeightsBetti(0,{0,0},{2,3}))#(1,1)
+
+
+totalBettiTally(0,{0,0},{2,4})
+
+(dominantWeightsBetti(0,{0,0},{2,4}))#(12,2)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(11,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(10,2)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(8,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(7,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(6,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(5,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(4,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(3,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(2,1)
+(dominantWeightsBetti(0,{0,0},{2,4}))#(1,1)
+
+totalBettiTally(0,{0,0},{2,5})
+
+(dominantWeightsBetti(0,{0,0},{2,5}))#(14,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(13,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(12,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(11,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(10,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(9,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(8,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(7,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(6,1)
+(dominantWeightsBetti(0,{0,0},{2,5}))#(5,1)
+
+
+totalBettiTally(0,{0,0},{2,6})
+(dominantWeightsBetti(0,{0,0},{2,6}))#(13,1)
+(dominantWeightsBetti(0,{0,0},{2,6}))#(12,1)
+(dominantWeightsBetti(0,{0,0},{2,6}))#(11,1)
+(dominantWeightsBetti(0,{0,0},{2,6}))#(10,1)
+(dominantWeightsBetti(0,{0,0},{2,6}))#(9,1)
+(dominantWeightsBetti(0,{0,0},{2,6}))#(8,1)
+
+totalBettiTally(0,{0,0},{3,3})
+
+(dominantWeightsBetti(0,{0,0},{3,3}))#(13,2)
+(dominantWeightsBetti(0,{0,0},{3,3}))#(12,2)
+(dominantWeightsBetti(0,{0,0},{3,3}))#(11,2)
+(dominantWeightsBetti(0,{0,0},{3,3}))#(10,2)
+(dominantWeightsBetti(0,{0,0},{3,3}))#(9,1)
+3
+(dominantWeightsBetti(0,{0,0},{3,4}))#(17,2)
+(dominantWeightsBetti(0,{0,0},{3,5}))#(21,2)
+
+dominantWeightsBetti(0,{0,0},{3,5})
+dominantWeightsBetti(0,{0,0},{2,6})
+
+
 M = new MutableHashTable
 apply(dataRange,L->(
 	H := dominantWeightsBetti(0,(L#0),(L#1));
@@ -281,6 +345,25 @@ apply(dataRange,L->(
 		    if (max apply((H#k),i->i#1)) > 1 then k
 		    ))));
 	))
+M2 = new MutableHashTable
+apply(keys M, k->(
+	B := k#1;
+	D := k#0;
+	if ((D#0)-(B#0))>=2 and ((D#1)-(B#1))>=2 then (
+	    if M#k != {} then M2#k = M#k;
+	    if M#k == {} then M2#k = false;
+	    )))
+
+M3 = new MutableHashTable
+
+guess = (D,B)->(
+    {(2*(D#1)-1-(B#1)+(B#0)*((D#1)+1),1)}
+    )
+
+apply(keys M2,k->(
+	guess((k#0),(k#1)) == M2#k
+	))
+
 multiplicityDominantWeightsConjecture = method()
 multiplicityDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
     if a != 0 then true
