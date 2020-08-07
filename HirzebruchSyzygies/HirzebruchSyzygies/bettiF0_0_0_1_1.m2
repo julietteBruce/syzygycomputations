@@ -5,4 +5,6 @@ tb0011 = new HashTable from {(0,0) => 1/1, (1,0) => 0, (1,1) => 1/1, (2,1) => 0,
 sb0011 = new HashTable from {(0,0) => {({0,0,0,0},1/1)}, (1,0) => {}, (1,1) => {({1,1,1,1},1/1)}, (2,1) => {}, (3,1) => {}};
 --dw stands for dominant weights
 dw0011 = new HashTable from {(0,0) => {({0,0,0,0},1/1)}, (1,0) => {}, (1,1) => {({1,1,1,1},1/1)}, (2,1) => {}, (3,1) => {}};
+--dmw stands for dominant monomial weights
+dmw0011 = {infinity};
 end;

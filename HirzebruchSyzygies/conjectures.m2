@@ -217,61 +217,50 @@ testConjecture(0,1,secondLastSchurConjecture,ShowFails=>true)
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D)
+----- INPUT: (a,B,D,q)
 -----
 ----- OUPUT: True or False
 -----
------ DESCRIPTION: This function tests our conjecture that there
------ is exactly one dominant weight for each non-zero entry.
+----- DESCRIPTION: This function tests whether our conjecture concerning 
+----- the Schur functor decomposition for the last entry in the q=1
+----- row is true for the input (a,B,D,q).
 -----
------ CAVEAT: This conjecture is currently only made for a=0. If
------- any other case is tested this function will just return true. 
+----- CAVEAT: This conjecture is currently only made for a=0, 
+----- B={0,0}, and q=1. If any other case is tested this function will
+----- just return true. 
 -----
+----- NOTE: This conjecture is FALSE for D={2,2},{2,3},{3,3},{3,4}.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-
-numberDominantWeightsConjecture = method()
-numberDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
-    if a != 0 then true
+monomialWeightsSubsetConjecture = method();
+monomialWeightsSubsetConjecture (ZZ,List,List) := (a,B,D) ->(
+    if a != 0 or B != {0,0} then true
     else (
-	H := dominantWeightsBetti(a,B,D);
-	L := apply(keys H, k->( #(H#k)));
-	return max L <= 1
-	)
-    )
+	H1 = repsWithoutMultiplicity(dominantWeightsBetti(a,B,D));
+	H2 = monomialDominantWeights(a,B,D);
+	{{D,B},delete(true,delete(,apply(keys H1, h->(
+		if H2 === {infinity} or H1#h === {} then true
+		else (
+		    if isSubset(H2#h,H1#h) == false then h
+		    ))
+	    )
+	))}
+))
 
-testConjecture(0,numberDominantWeightsConjecture,ShowFails=>true)
+apply(dataRange,D->(
+	print D;
+	monomialWeightsSubsetConjecture(0,D#0,D#1)
+	))
+
+testConjecture(0,1,secondLastSchurConjecture,ShowFails=>true)
 
 
-
---------------------------------------------------------------------
---------------------------------------------------------------------
------ INPUT: (a,B,D)
------
------ OUPUT: True or False
------
------ DESCRIPTION: This function tests our conjecture that the greatest
------ multiplicity of a dominant weight is 2. 
------
------ CAVEAT: This conjecture is currently only made for a=0. If
------- any other case is tested this function will just return true. 
------
---------------------------------------------------------------------
---------------------------------------------------------------------
-multiplicityDominantWeightsConjecture = method()
-multiplicityDominantWeightsConjecture (ZZ,List,List) := (a,B,D) ->(
-    if a != 0 then true
-    else (
-	H := dominantWeightsBetti(a,B,D);
-	L := flatten delete(,apply(keys H, k->(
-		if (H#k) != {} then (
-		    apply((H#k),i->i#1)
-		    ))));
-	return max L <= 2
-	)
-    )
-
-testConjecture(0,multiplicityDominantWeightsConjecture,ShowFails=>true)
+H = dominantWeightsBetti(0,{0,0},{2,4})
+W = monomialDominantWeights(0,{0,0},{2,4})
+M = new MutableHashTable
+apply(keys H, h->(
+	M#h = toList (set apply(H#h,i->i#0) - set W#h)
+	))
 
 totalBettiTally(0,{0,0},{2,3})
 
@@ -303,7 +292,10 @@ apply(10..12,i->(
 	))
 
 (dominantWeightsBetti(0,{0,0},{2,4}))#(12,2)
+monomialDominantWeights
 (dominantWeightsBetti(0,{0,0},{2,4}))#(11,1)
+(monomialDominantWeights(0,{0,0},{2,4}))#(11,1)
+
 (dominantWeightsBetti(0,{0,0},{2,4}))#(10,2)
 (dominantWeightsBetti(0,{0,0},{2,4}))#(8,1)
 (dominantWeightsBetti(0,{0,0},{2,4}))#(7,1)

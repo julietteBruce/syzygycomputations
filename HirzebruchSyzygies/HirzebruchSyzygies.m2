@@ -64,6 +64,7 @@ export {
   "totalBettiTally",
   "monomialWeights", -- docs
   "dominantWeightsBetti",
+  "repsWithoutMultiplicity",
   "monomialDominantWeights" -- docs
   --"lexWeightsBetti", --  docs
   --"numDistinctRepsBetti", -- docs
@@ -314,6 +315,26 @@ monomialDominantWeights (ZZ,List,List) := (a,B,D) ->(
     --A := QQ[t_0,t_1,t_2, MonomialOrder => Lex];
     load getFileName(a,B,D);
     value("dmw"|shortFileName(B,D))
+    )
+
+
+--------------------------------------------------------------------
+--------------------------------------------------------------------
+----- INPUT: (H) 
+-----
+----- OUPUT: A hash table containing the number of distinct Schur 
+----- functors appearing in the decomposition of the graded Betti 
+----- numbers for O(B) on F_a embedded by O(D).
+-----
+----- DESCRIPTION: It is often useful to forget the multiplicty of 
+----- the Schur functors appearing in a decomposition. Given a 
+----- hash table whose values are schur functors this function will
+----- return a the corresponding hashtable without the multiplicities.
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+repsWithoutMultiplicity = method();
+repsWithoutMultiplicity  (HashTable) := (H) ->(
+    applyValues(H,v->apply(v,i->i#0))
     )
 
 
