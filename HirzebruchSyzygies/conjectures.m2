@@ -16,7 +16,34 @@ dataRange = value get "dataRange.m2"
 --       3,5}},{{1,2},{3,5}},{{1,3},{3,5}},{{1,4},{3,5}},{{2,0},{3,5}},{{2,1},{3,5}},{{2,2},{3,5}},{{2,3},{3,5}},{{2,4},{3,5}},{{1,4},{3,6}},{{2,2},{4,4}}}
 
 
---------------------------------------------------------------------
+delete(,apply(keys H, k->(
+	if k#1 == 1 then (k#0,H#k)
+	)))
+
+    g = openOut ("HirzebruchSyzygiesNew2/bettiF0_"|fileName(B,D)|".m2");
+    g<< "A := QQ[t_0,t_1,t_2,t_3];";
+    g<< endl;
+    g<< "--tb stands for Total Betti numbers";
+    g<< endl;
+    
+D1 = delete(,apply(dataRange, i->(if i#0 == {0,0} then i)))
+
+g = openOut ("bettiNumbers-Q1");
+apply(D1,D->(
+	H := totalBetti(0,{0,0},D#1);
+	L := delete(,apply(keys H, k->(
+		    --if k#1 == 1 then (k#0,sub(H#k,ZZ))
+		    if k#1 == 2 then (k#0,sub(H#k,ZZ))
+		    )));
+    	g<< "D="|toString((D#1));
+    	g<< endl;
+    	g<< toExternalString L;
+    	g<< endl;
+	g<< endl;
+	))
+
+close g
+to--------------------------------------------------------------------
 --------------------------------------------------------------------
 ----- INPUT: (a,q,F) where F is a method whose input is of the form
 ----- (a,B,D,q) and whose output are Boolean values
