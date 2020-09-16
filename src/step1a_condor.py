@@ -31,7 +31,7 @@ if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
 
 computeRR_file = open(os.path.join(out_dir,"computeRR.m2"),'w')
-computeRR_file.writelines(['load "src/relevantRange.m2"\n',
+computeRR_file.writelines(['load "relevantRange.m2"\n',
                           "d={"+"{},{}".format(str(d1),str(d2)) + "}\n",
                           "b={"+"{},{}".format(str(b1),str(b2)) + "}\n",
                           "rR=relevantRange(0,b,d)\n", 
@@ -124,7 +124,7 @@ def ranks_condor(p,q):
             "output = {}/$(outfile).$(CLUSTER).$(PROCESS).ranks".format(ranks_pq_dir),
             "error = {}/$(outfile).$(CLUSTER).$(PROCESS).err".format(error_dir),
             "log = {}/map_{}_{}.$(CLUSTER).log".format(log_dir,p,q),
-            "request_memory = 2G",
+            "request_memory = 5G",
             "request_cpus = 1",
             "queue infile matching files {}/map_{}_{}/*.dat".format(matrix_dir,p,q)
         ]))
