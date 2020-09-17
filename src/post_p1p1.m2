@@ -511,7 +511,7 @@ isCM = (a,B,D)->(
 
 
 lowerBound = (q,a,B,D)->(
-    if isCM(a,B,D) == false then return "error not CM";
+    --if isCM(a,B,D) == false then return "error not CM";
     --This is crucial for the use of duality esp in the a = 0 and B != (0,0) cases
     if B == {0,0} then (
 	if q == 0 then (0)
@@ -551,7 +551,7 @@ lowerBound = (q,a,B,D)->(
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 upperBound = (q,a,B,D)->(
-    if isCM(a,B,D) == false then return "error not CM";
+    --if isCM(a,B,D) == false then return "error not CM";
     if a == 0 then(
 	pDim := (D#0+1)*(D#1+1)-3;
     	dualB := D-B-{2,2};

@@ -124,32 +124,12 @@ isCM = (a,B,D)->(
 ----- WARNINGS: Everything is hardcoded to only handle a = 0.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-<-*old lower bound
-lowerBound = (q,a,B,D)->(
-    if B == {0,0} then (
-	if q == 0 then (0)
-	else if q == 1 then (1)
-	-- for q = 2 see [CCDL, Thm 1.4]
-	else if q == 2 then (
-	    boundary(a,D)-2
-	    )
-	)
-    else (
-	if a != 0 then return "error: a != 0";
-    	-- for q = 0 see Prop 5.1 in EL
-    	if q == 0 then (0) 
-    	else if q == 1 then (1)
-    	-- for q = 2 apply duality (see Prop 3.5 in EL)
-    	else if q == 2 then (
-	if ((B#0+D#0)< -1 and (B#0+D#0)>0) or ((B#0+D#0)>0 and (B#1+D#1)< -1) then return "error: intermediate cohomology"
-	else h0(a,{-2,-2}-B+D)
-	)
-    ))
-*->
+
+
 
 
 lowerBound = (q,a,B,D)->(
-    if isCM(a,B,D) == false then return "error not CM";
+--    if isCM(a,B,D) == false then return "error not CM";
     --This is crucial for the use of duality esp in the a = 0 and B != (0,0) cases
     if B == {0,0} then (
 	if q == 0 then (0)
@@ -189,7 +169,7 @@ lowerBound = (q,a,B,D)->(
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 upperBound = (q,a,B,D)->(
-    if isCM(a,B,D) == false then return "error not CM";
+--    if isCM(a,B,D) == false then return "error not CM";
     if a == 0 then(
 	pDim := (D#0+1)*(D#1+1)-3;
     	dualB := D-B-{2,2};
@@ -290,34 +270,6 @@ lowerBound(0,a,B,D)
 lowerBound(1,a,B,D)
 lowerBound(2,a,B,D)
 
-
-<-*  old version of upper bound
-upperBound = (q,a,B,D)->(
-    if B == {0,0} then (
-	if q == 0 then (0)
-	else if q == 1 then (
-	    h0(a,D)-(latticeWidth(a,D)+1)
-	    )
-	else if q == 2 then (
-	    h0(a,D)-3
-	    )
-	)
-    else(
-	if a != 0 then return "error: a != 0";
-    	-- for q = 0 see Prop 5.1 in EL
-    	if q == 0 then ( 
-	    if (B#0 > D#0) or (B#1 > D#1) then return "error: B>D"
-	    else h0(a,B)
-	    )  
-    	else if q == 1 then (
-	    h0(a,D)
-	    )
-    	-- for q = 2 apply duality (see Prop 3.5 in EL)
-    	else if q == 2 then (
-	    h0(a,D)
-	    )
-	))
-*->
 
 a = 0
 D = {4,5}

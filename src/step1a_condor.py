@@ -124,7 +124,7 @@ def ranks_condor(p,q):
             "output = {}/$(outfile).$(CLUSTER).$(PROCESS).ranks".format(ranks_pq_dir),
             "error = {}/$(outfile).$(CLUSTER).$(PROCESS).err".format(error_dir),
             "log = {}/map_{}_{}.$(CLUSTER).log".format(log_dir,p,q),
-            "request_memory = 5G",
+            "request_memory = 15G",
             "request_cpus = 1",
             "queue infile matching files {}/map_{}_{}/*.dat".format(matrix_dir,p,q)
         ]))
