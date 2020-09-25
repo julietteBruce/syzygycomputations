@@ -157,8 +157,8 @@ lastSchurEntry (ZZ,List,List,ZZ) := (a,B,D,q) ->(
 ----- namely for D={2,2} and D = {3,3}.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-lastSchurConjecture = method();
-lastSchurConjecture (ZZ,List,List,ZZ) := (a,B,D,q) ->(
+lastSchurConjectureQ1 = method();
+lastSchurConjectureQ1 (ZZ,List,List,ZZ) := (a,B,D,q) ->(
     if a != 0 or B != {0,0} or q != 1 then true
     else (
 	A1 := binomial((D#0)+1,2)*binomial((D#1),1);
@@ -170,7 +170,31 @@ lastSchurConjecture (ZZ,List,List,ZZ) := (a,B,D,q) ->(
 	)
     )
 
-testConjecture(0,1,lastSchurConjecture,ShowFails=>true)
+testConjecture(0,1,lastSchurConjectureQ1,ShowFails=>true)
+
+lastSchurConjectureQ2 = method();
+lastSchurConjectureQ2 (ZZ,List,List,ZZ) := (a,B,D,q) ->(
+    if a != 0 or B != {0,0} or q != 2 or (D#0) != 2 or (D#0) != 3 then true
+    else (
+	if (D#0) == 2 then (
+	    A1 = binomial((D#0)+1,2)*binomial((D#1)+1,1)-1;
+	    A2 = binomial((D#0)+1,2)*binomial((D#1)+1,1)-1; 
+	    A3 = binomial((D#0)+1,1)*binomial((D#1)+1,2)-1;
+	    A4 = binomial((D#0)+1,1)*binomial((D#1),2)-1-((D#1)-(D#0));
+	    );
+	if D#0 == 3 then (
+            A1 = binomial((D#0)+1,2)*binomial((D#1)+1,1)-1;
+	    A2 = binomial((D#0)+1,2)*binomial((D#1)+1,1)-2; 
+	    A3 = binomial((D#0)+1,1)*binomial((D#1)+1,2)-1;
+	    A4 = binomial((D#0)+1,1)*binomial((D#1),2)-1-((D#1)-(D#0)+1);
+	    );
+	conj := {A1,A2,A3,A4};
+	{(conj,1)} == lastSchurEntry(a,B,D,q)
+	)
+    )
+
+testConjecture(0,2,lastSchurConjectureQ2,ShowFails=>true)
+
 
 
 
@@ -257,7 +281,13 @@ M3 = new MutableHashTable;
 L3 = delete(,apply(keys H, h-> if h#1==2 then (if H#h != {} then M3#h = H#h)
 	    ));
 
-(schurBetti(0,{0,0},{3,3}))#(13,2)    
+
+(schurBetti(0,{0,0},{2,3}))#(8,2) 
+(schurBetti(0,{0,0},{2,4}))#(10,2) 
+netList (dominantWeightsBetti(0,{0,0},{2,5}))#(12,2)
+netList (dominantWeightsBetti(0,{0,0},{2,6}))#(14,2)
+netList (dominantWeightsBetti(0,{0,0},{2,7}))#(16,2)
+netList (dominantWeightsBetti(0,{0,0},{2,8}))#(18,2)
 (schurBetti(0,{0,0},{3,4}))#(17,2)
 (schurBetti(0,{0,0},{3,5}))#(21,2)
 (schurBetti(0,{0,0},{2,5}))#(15-1,2)
