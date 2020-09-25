@@ -20,43 +20,6 @@ needsPackage "Posets";
 -----
 --------------------------------------------------------------------
 --------------------------------------------------------------------
--*monomialSyzygies = method();
-monomialSyzygies (ZZ,List,List,Sequence) := (a,B,D,P) ->(
-    p := P#0;
-    q := P#1;
-    if a != 0 or B != {0,0} then error;
-    ---
-    S = QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
-    I = ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
-    ---
-    if q == 0 then return {};
-    if q == 1 then (f = x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)) ;
-    --if q == 2 then (f = x_0^(2*(D#0)-1)*x_1^((B#0)+1)*y_0^((D#1)-1)*y_1^((D#1)+(B#1)+1));
-    if q == 2 then (f = x_0*x_1^(2*(D#0)-1)*y_0^((D#1)+1)*y_1^((D#1)+(B#1)-1));
-    --if q == 2 then (f = x_0^((D#0)+1)*x_1^((D#0)-1)*y_0*y_1^(2*(D#1)+(B#1)-1));
-    ---	
-    Q := quotient(I,f);
-    ---
-    B1 = unique flatten entries basis(D,S);
-    B2 := delete(,apply(B1, m->(if m%Q == 0 then m)));
-    L1 := toList (set B2 - set {x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
-    ---
-    R = QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}];
-    J = ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
-    T = R/J;
-    L2 := apply(L1,i->sub(i,T));
-    B3 := apply(B1,i->sub(i,T));
-    g := sub(f,T);
-    ---
-    D1 = delete(,apply(B3,m->(if g%m == 0 then m)));
-    L4 = apply({x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)},i->sub(i,T));
-    D2 = toList (set D1 - set L4);
-    L3 = toList (set L2 - set D2);
-    apply(subsets(L3,p-(#D2)),L->(
-		{apply(L,i->degree i)|apply(D2,j->degree j),degree g}
-		))
-	) *-
-
 monomialSyzygies = method();
 monomialSyzygies (ZZ,List,List,Sequence) := (a,B,D,P) ->(
     p := P#0;
@@ -67,120 +30,26 @@ monomialSyzygies (ZZ,List,List,Sequence) := (a,B,D,P) ->(
     I = ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
     ---
     if q == 0 then return {};
-    if q == 1 then (f = x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)) ;
-    if q == 2 then (f = x_0^(2*(D#0)-1)*x_1^((B#0)+1)*y_0^((D#1)-1)*y_1^((D#1)+(B#1)+1));
-    --if q == 2 then (f = x_0*x_1^(2*(D#0)-1)*y_0^((D#1)+1)*y_1^((D#1)+(B#1)-1));
-    --if q == 2 then (f = x_0^((D#0)+1)*x_1^((D#0)-1)*y_0*y_1^(2*(D#1)+(B#1)-1));
-    ---	
-    Q = quotient(I,f);
-    ---
-    B1 = unique flatten entries basis(D,S);
-    B2 = unique flatten entries basis(q*D,S);
-    B3 = delete(,apply(B1, m->(if m%Q == 0 then m)));
-    L1 = toList (set B3 - set {x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)});
-    ---
-    R = QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}];
-    J = ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
-    --T = R/J;
-    L2 = apply(L1,i->sub(i,R));
-    B4 = apply(B1,i->sub(i,R));
-    g = sub(f,R);
-    B5 = apply(B2,i->(sub(i,R)));
-    F = unique delete(,apply(B5,h->(if (g-h)%J == 0 or (g+h)%J == 0 then h)));
-    ---
-    D1 = unique delete(,flatten apply(F,g->(apply(B4,m->(if g%m == 0 then m)))));	
-    L3 = apply({x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)},i->sub(i,R));
-    D2 = toList (set D1 - set L3);
-    L4 = toList (set L2 - set D2);
-    apply(subsets(L4,p-(#D2)),L->(
-		{apply(L,i->degree i)|apply(D2,j->degree j),degree g}
-		))
-	)
-
------ true for Q1=>1 but not Q1=0,2
-H1 = entryToHashWrapperDomMonomial(0,{0,0},{2,3},Q1=>1);
-H2 = applyValues(dominantWeightsBetti(0,{0,0},{2,3}),v->(apply(v,i->i#0)));
-M = new MutableHashTable
-apply(keys H2,k->M#k = isSubset((H1#k),(H2#k)))
-apply(keys H2,k->M#k = (H1#k)==(H2#k))
-
-
------ true for Q1=>1 but not Q1=0,2
-H1 = entryToHashWrapperDomMonomial(0,{0,0},{2,6},Q1=>1);
-H2 = applyValues(dominantWeightsBetti(0,{0,0},{2,6}),v->(apply(v,i->i#0)));
-M = new MutableHashTable
-apply(keys H2,k->M#k = isSubset((H1#k),(H2#k)))  
-apply(keys H2,k->M#k = (H1#k)==(H2#k))
-
------ true for Q1=>1 but not Q1=0,2
-H1 = entryToHashWrapperDomMonomial(0,{0,0},{2,3},Q1=>1);
-H2 = applyValues(dominantWeightsBetti(0,{0,0},{2,3}),v->(apply(v,i->i#0)));
-M = new MutableHashTable
-apply(keys H2,k->M#k = isSubset((H1#k),(H2#k)))
-
------ false for everything but best for Q1=>1
-H1 = entryToHashWrapperDomMonomial(0,{0,0},{3,3},Q1=>1);
-H2 = applyValues(dominantWeightsBetti(0,{0,0},{3,3}),v->(apply(v,i->i#0)));
-M = new MutableHashTable
-apply(keys H2,k->M#k = isSubset((H1#k),(H2#k)))
-
------ false for everything but best for Q1=>1
-H1 = entryToHashWrapperDomMonomial(0,{0,0},{3,4},Q1=>1);
-H2 = applyValues(dominantWeightsBetti(0,{0,0},{3,4}),v->(apply(v,i->i#0)));
-M = new MutableHashTable
-apply(keys H2,k->M#k = isSubset((H1#k),(H2#k)))
-  
-  
------ false for everything but best for Q1=>1
-H1 = entryToHashWrapperDomMonomial(0,{0,0},{3,5},Q1=>1);
-H2 = applyValues(dominantWeightsBetti(0,{0,0},{3,5}),v->(apply(v,i->i#0)));
-M = new MutableHashTable
-apply(keys H2,k->M#k = isSubset((H1#k),(H2#k)))  	
-		
-		
-		
-		
-		
-monomialSyzygies = method(Options => {Q1 => 0});
-monomialSyzygies (ZZ,List,List,Sequence) := opts -> (a,B,D,P) ->(
-    p := P#0;
-    q := P#1;
-    if a != 0 or B != {0,0} then error;
-    ---
-    S = QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0},{1,0},{0,1},{0,1}}];
-    I = ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
-    ---
-    if q == 0 then return {};
-    if q == 1 then (
-	if opts.Q1 == 0 then (F = {x_0^(D#0-1)*x_1^(B#0+1)*y_0^((D#1+B#1))});
-	if opts.Q1 == 1 then (F = {x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)});
-	if opts.Q1 == 2 then (F = {x_0^(D#0-1)*x_1^(B#0+1)*y_0^((D#1+B#1)),x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)});
-	);
     --if q == 1 then (F = {x_0^(D#0-1)*x_1^(B#0+1)*y_0^((D#1+B#1))});
-     --if q == 1 then (F = {x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)});
+    if q == 1 then (F = {x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)});
     --if q == 1 then (F = {x_0^(D#0-1)*x_1^(B#0+1)*y_0^((D#1+B#1)),x_0^(D#0+B#0)*y_0^((D#1)-1)*y_1^((B#1)+1)}) ;
     if q == 2 then (F = {x_0^(2*(D#0)-1)*x_1^((B#0)+1)*y_0^((D#1)-1)*y_1^((D#1)+(B#1)+1)});
-    --if q == 2 then (f = x_0*x_1^(2*(D#0)-1)*y_0^((D#1)+1)*y_1^((D#1)+(B#1)-1));
-    --if q == 2 then (f = x_0^((D#0)+1)*x_1^((D#0)-1)*y_0*y_1^(2*(D#1)+(B#1)-1));
     ---	
     flatten apply(F, f->(
 	    Q := quotient(I,sub(f,S));
-	    print Q;
     	    ---
     	    B1 := unique flatten entries basis(D,S);
     	    B2 := unique flatten entries basis(q*D,S);
     	    B3 := delete(,apply(B1, m->(if m%Q == 0 then m)));
-	    print (#B3);
 	    L0 := apply({x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)},i->sub(i,S));
     	    L1 := toList (set B3 - set L0);
-	    print (#L1);
     	    ----
     	    R := QQ[x_0,x_1,y_0,y_1,Degrees=>{{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}];
     	    J := ideal(x_0^(D#0)*y_0^(D#1), x_0^(D#0)*y_1^(D#1)+x_1^(D#0)*y_0^(D#1), x_1^(D#0)*y_1^(D#1));
     	    --T = R/J;
     	    L2 := apply(L1,i->sub(i,R));
     	    B4 := apply(B1,i->sub(i,R));
-    	    g := sub(f,R);s
+    	    g := sub(f,R);
     	    B5 := apply(B2,i->(sub(i,R)));
     	    H := unique delete(,apply(B5,h->(if (g-h)%J == 0 or (g+h)%J == 0 then h)));	  
     	    ---
@@ -188,22 +57,12 @@ monomialSyzygies (ZZ,List,List,Sequence) := opts -> (a,B,D,P) ->(
     	    L3 := apply({x_0^(D#0)*y_1^(D#1), x_1^(D#0)*y_1^(D#1), x_0^(D#0)*y_0^(D#1)},i->sub(i,R));
     	    D2 := toList (set D1 - set L3);
     	    L4 := toList (set L2 - set D2);
-	    print (#L4);
     	    apply(subsets(L4,p-(#D2)),L->(
 		    {apply(L,i->degree i)|apply(D2,j->degree j),degree g}
 		    ))
 	    ))
 	)
-{8, 7, 19, 1}
-M1 = unique monomialSyzygiesWeights(0,{0,0},{2,3},(4,1),Q1=>0);
-M2 = unique monomialSyzygiesWeights(0,{0,0},{2,3},(4,1),Q1=>1);
-M3 = unique M1|M2;
-M4 = unique monomialSyzygiesWeights(0,{0,0},{2,3},(4,1),Q1=>2);
 
-{{2, 0, 2, 1}, {1, 1, 1, 2}, {2, 0, 1, 2}, {1, 1, 3, 0}}|{1, 1, 3, 0}|
-
-
-(unique M3) == (unique M4)
 monomialSyzygies1 = method();
 monomialSyzygies1 (ZZ,List,List,Sequence) := (a,B,D,P) ->(
     p := P#0;
@@ -255,9 +114,9 @@ monomialSyzygies1 (ZZ,List,List,Sequence) := (a,B,D,P) ->(
 -----
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-monomialSyzygiesWeights = method(Options => {Q1 => 0});
-monomialSyzygiesWeights (ZZ,List,List,Sequence) := opts -> (a,B,D,P) ->(
-    L := monomialSyzygies(a,B,D,P,Q1=>opts.Q1);
+monomialSyzygiesWeights = method();
+monomialSyzygiesWeights (ZZ,List,List,Sequence) := (a,B,D,P) ->(
+    L := monomialSyzygies(a,B,D,P);
     apply(L,i->(
 	    sum (i#0) + (i#1)
 	    ))
@@ -396,77 +255,29 @@ dominantWeights (List) := opts -> (L)->(
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 
-entryToHashWrapperDomSchur = method();
-entryToHashWrapperDomSchur (ZZ,List,List) := (a,B,D) ->(
+entryToHashWrapperDomMonomial = method();
+entryToHashWrapperDomMonomial (ZZ,List,List) := (a,B,D) ->(
     H1 := schurBetti(a,B,D);
-    applyPairs(H1,(k,v)->(k,dominantWeights(v,Schur=>true)))
+    applyPairs(H1,(k,v)->(k,dominantWeights monomialSyzygiesWeights(a,B,D,k)))
     )
 
-entryToHashWrapperMonomial = method();
-entryToHashWrapperMonomial (ZZ,List,List) := (a,B,D) ->(
-    H1 := schurBetti(a,B,D);
-    applyPairs(H1,(k,v)->(k,monomialSyzygiesWeights(a,B,D,k)))
-    )
+H1 = entryToHashWrapperDomMonomial(0,{0,0},{2,4})
+H2 = applyValues(dominantWeightsBetti(0,{0,0},{2,4}),v->(apply(v,i->i#0)))
+M1 = new MutableHashTable
+apply(keys H2,k->M1#k = #toList( set (H1#k) - set (H2#k)))
+peek M1
+M2 = new MutableHashTable
+delete(,apply(keys H2,k->(if  ((sort (H1#k)) == (sort (H2#k))) == false then k
+	)))
 
-entryToHashWrapperDomMonomial = method(Options => {Q1 => 0});
-entryToHashWrapperDomMonomial (ZZ,List,List) := opts -> (a,B,D) ->(
-    H1 := schurBetti(a,B,D);
-    applyPairs(H1,(k,v)->(k,dominantWeights monomialSyzygiesWeights(a,B,D,k,Q1=>opts.Q1)))
-    )
+testCases = {{2,2},{2,3},{2,4},{2,5},{2,7},{3,3},{3,4},{3,5}};
+M = new MutableHashTable;
+apply(testCases, D->(
+	H1 = entryToHashWrapperDomMonomial(0,{0,0},D);
+	H2 = applyValues(dominantWeightsBetti(0,{0,0},D),v->(apply(v,i->i#0)));
+	M#D = delete(,apply(keys H2,k->(if  ((sort (H1#k)) == (sort (H2#k))) == false then k
+	)))
+	))
 
-
-fileName1 = (B,D)->(
-    toString(B#0)|toString(B#1)|toString(D#0)|toString(D#1)
-    )
-fileName = (B,D)->(
-    toString(B#0)|"_"|toString(B#1)|"_"|toString(D#0)|"_"|toString(D#1)
-    )
-
-
-updateOutputFilesDW =  (a,B,D)->(
-    --  Writing the files
-    g = openOut ("HirzebruchSyzygiesNew2/bettiF0_"|fileName(B,D)|".m2");
-    g<< "A := QQ[t_0,t_1,t_2,t_3];";
-    g<< endl;
-    g<< "--tb stands for Total Betti numbers";
-    g<< endl;
-    g<< "tb"|fileName1(B,D)|" = ";
-    g<< toExternalString totalBetti(a,B,D);
-    g<< ";";
-    g<< endl; 
-    g<< "--sb represents the betti numbers as sums of Schur functors";
-    g<< endl ;
-    g<< "sb"|fileName1(B,D)|" = ";
-    g<< toExternalString schurBetti(a,B,D);
-    g<< ";";
-    g<< endl;
-    g<< "--dw stands for dominant weights";
-    g<< endl;
-    g<< "dw"|fileName1(B,D)|" = ";
-    g<< toExternalString entryToHashWrapperDomSchur(a,B,D);
-    g<< ";";
-    g<< endl;
-    --g<< "--mw stands for monomial weights";
-    --g<< endl;
-    --g<< "mw"|fileName1(B,D)|" = ";
-    --g<< toExternalString entryToHashWrapperMonomial(a,B,D);
-    --g<< ";";
-    --g<< endl;
-    --g<< "--dmw stands for dominant monomial weights";
-    --g<< endl;
-    --g<< "dmw"|fileName1(B,D)|" = ";
-    --g<< toExternalString entryToHashWrapperDomMonomial(a,B,D);
-    --g<< ";";
-    --g<< endl;
-    --g<< "end;";
-    close g;    
-    )
-
-
-dataRange = value get "dataRange.m2"
-dataRange2 = delete({{1,0},{1,1}},delete({{0,0},{1,1}},dataRange))
-dataRange2 = delete({{2,0},{3,11}},delete({{2,1},{3,11}},delete({{1,2},{2,15}},delete({{1,2},{2,14}},delete({{1,0},{2,13}},dataRange)))))
-apply(dataRange2,i->(
-	print i;
-	updateOutputFilesDW(0,(i#0),(i#1));
-	    ))
+ A = H1#(10,2)  
+ B = H2#(10,2)
