@@ -16,34 +16,8 @@ dataRange = value get "dataRange.m2"
 --       3,5}},{{1,2},{3,5}},{{1,3},{3,5}},{{1,4},{3,5}},{{2,0},{3,5}},{{2,1},{3,5}},{{2,2},{3,5}},{{2,3},{3,5}},{{2,4},{3,5}},{{1,4},{3,6}},{{2,2},{4,4}}}
 
 
-delete(,apply(keys H, k->(
-	if k#1 == 1 then (k#0,H#k)
-	)))
 
-    g = openOut ("HirzebruchSyzygiesNew2/bettiF0_"|fileName(B,D)|".m2");
-    g<< "A := QQ[t_0,t_1,t_2,t_3];";
-    g<< endl;
-    g<< "--tb stands for Total Betti numbers";
-    g<< endl;
-    
-D1 = delete(,apply(dataRange, i->(if i#0 == {0,0} then i)))
-
-g = openOut ("bettiNumbers-Q1");
-apply(D1,D->(
-	H := totalBetti(0,{0,0},D#1);
-	L := delete(,apply(keys H, k->(
-		    --if k#1 == 1 then (k#0,sub(H#k,ZZ))
-		    if k#1 == 2 then (k#0,sub(H#k,ZZ))
-		    )));
-    	g<< "D="|toString((D#1));
-    	g<< endl;
-    	g<< toExternalString L;
-    	g<< endl;
-	g<< endl;
-	))
-
-close g
-to--------------------------------------------------------------------
+--------------------------------------------------------------------
 --------------------------------------------------------------------
 ----- INPUT: (a,q,F) where F is a method whose input is of the form
 ----- (a,B,D,q) and whose output are Boolean values
@@ -84,6 +58,119 @@ testConjecture  (ZZ,MethodFunction) := opts -> (a,F) ->(
 		)))  
 	); 
     )
+
+
+
+---- Check whether a list is unimodal -----
+isUnimodal = method();
+isUnimodal  (List) := (L) ->(
+    signs := delete(0,apply(#L-1,i->(L#(i+1)-L#(i))));
+    signFlips := sum delete(,apply(toList(1..#signs-1),j->(
+		if ((signs#(j-1))<=0 and (signs#(j))>0) or ((signs#(j-1))>=0 and (signs#(j))<0) then 1
+		)));
+    signFlips <= 1
+    )
+
+G1 = {1,2,3,4,5,4,3,2,1}
+G2 = {1,2,3,4,5,5,5,5,4,3,2,1}
+G3 = {5,4,3,2,1,1,2,3,4,5,5,5,5}
+G4 = {1,2,3,4,3,4,3,2,1}
+
+
+isUnimodal(G1)
+isUnimodal(G2)
+isUnimodal(G3)
+isUnimodal(G4)	    	
+
+
+
+---- Get the indices for the non-zero entries for the q-th row of the Betti table. 
+getRow = method();
+getRow  (ZZ,List,List) := (q,B,D) ->(
+    H := totalBetti(0,B,D);
+    sort delete(,apply(keys H, k->if k#1 == q and H#k != 0 then k))
+    )
+
+
+---- Tests whether all the q=0,1,2 rows of the Betti table is unimodal. 
+totalBettiUnimodal = method();
+totalBettiUnimodal  (List,List) := (B,D) ->(
+    H := totalBetti(0,B,D);
+    unique apply(3,q->(
+	    Keys := getRow(q,B,D);
+	    isUnimodal(apply(Keys,k->H#k))
+	    ))
+    )
+
+-- tests all data
+apply(dataRange,D->(
+	print D;
+	if totalBettiUnimodal(D#0,D#1) != {true} then D
+	))
+--- One failure....
+totalBettiTally(0,{2,3},{4,5})
+
+
+
+
+
+---- Tests whether all the q=0,1,2 rows of the schur Betti table WITHOUT multiplicty is unimodal. 
+schurBettiNoMulUnimodal = method();
+schurBettiNoMulUnimodal  (List,List) := (B,D) ->(
+    H := schurBetti(0,B,D);
+    unique apply(3,q->(
+	    Keys := getRow(q,B,D);
+	    isUnimodal(apply(Keys,k->#(H#k)))
+	    ))
+    )
+
+-- tests function correct-ness
+schurBettiNoMulUnimodal({0,0},{2,5})
+H = schurBetti(0,{0,0},{2,5})
+Keys = getRow(1,{0,0},{2,5})
+apply(Keys,k->#(H#k))
+
+-- tests all data
+delete(,apply(dataRange,D->(
+	print D;
+	if schurBettiNoMulUnimodal(D#0,D#1) != {true} then D
+	)))
+--- Many failures (87/193) including...{{0,0},{2,2}} {{0,0},{3,3}},{{0,0},{3,4}},{{0,0},{3,5}}
+--- Example of failure...
+H = schurBetti(0,{0,0},{3,4})
+Keys = getRow(1,{0,0},{3,4})
+apply(Keys,k->#(H#k))
+
+
+---- Tests whether all the q=0,1,2 rows of the schur Betti table WITH multiplicty is unimodal. 
+schurBettiMulUnimodal = method();
+schurBettiMulUnimodal  (List,List) := (B,D) ->(
+    H := schurBetti(0,B,D);
+    unique apply(3,q->(
+	    Keys := getRow(q,B,D);
+	    L1 := apply(Keys,k->(
+		    sum apply(H#k,v->v#1)
+		    ));
+	    isUnimodal L1
+	    ))
+    )
+
+-- tests function correct-ness
+schurBettiMulUnimodal({0,0},{2,5})
+H = schurBetti(0,{0,0},{2,5})
+Keys = getRow(1,{0,0},{2,5})
+apply(Keys,k->(
+	sum apply(H#k,v->v#1)
+	))
+
+-- tests all data
+delete(,apply(dataRange,D->(
+	print D;
+	if schurBettiMulUnimodal(D#0,D#1) != {true} then D
+	)))
+--- No failures....
+
+multiBetti(0,{0,0},{2,6})
 
 
 --------------------------------------------------------------------
