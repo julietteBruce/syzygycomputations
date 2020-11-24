@@ -63,13 +63,9 @@ export {
   "totalBetti", -- docs
   "totalBettiTally",
   "monomialWeights", -- docs
-<<<<<<< HEAD
   "dominantWeightsBetti",
   "repsWithoutMultiplicity",
   "monomialDominantWeights" -- docs
-=======
-  "dominantWeightsBetti" -- docs
->>>>>>> parent of 67e86b7... updating data
   --"lexWeightsBetti", --  docs
   --"numDistinctRepsBetti", -- docs
   --"numRepsBetti", -- docs
