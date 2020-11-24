@@ -325,20 +325,6 @@ totalBettiTally(0,{0,0},{2,4})
 
 
 totalBettiTally(0,{0,0},{2,4})
-(dominantWeightsBetti(0,{0,0},{2,4}))
-(monomialDominantWeights(0,{0,0},{2,4}))
-
-apply(1..11,i->(
-	L2 = apply((dominantWeightsBetti(0,{0,0},{2,4}))#(i,1),k->k#0);
-	L1 = (monomialDominantWeights(0,{0,0},{2,4}))#(i,1);
-	isSubset(L1,L2)
-	))
-
-apply(10..12,i->(
-	L2 = apply((dominantWeightsBetti(0,{0,0},{2,4}))#(i,2),k->k#0);
-	L1 = (monomialDominantWeights(0,{0,0},{2,4}))#(i,2);
-	L1==L2
-	))
 
 (dominantWeightsBetti(0,{0,0},{2,4}))#(12,2)
 monomialDominantWeights

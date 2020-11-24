@@ -63,9 +63,13 @@ export {
   "totalBetti", -- docs
   "totalBettiTally",
   "monomialWeights", -- docs
+<<<<<<< HEAD
   "dominantWeightsBetti",
   "repsWithoutMultiplicity",
   "monomialDominantWeights" -- docs
+=======
+  "dominantWeightsBetti" -- docs
+>>>>>>> parent of 67e86b7... updating data
   --"lexWeightsBetti", --  docs
   --"numDistinctRepsBetti", -- docs
   --"numRepsBetti", -- docs
@@ -308,13 +312,13 @@ dominantWeightsBetti (ZZ,List,List) := (a,B,D) ->(
 ----- for definitions.
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
-monomialDominantWeights = method();
-monomialDominantWeights (ZZ,List,List) := (a,B,D) ->(
+monomialWeights = method();
+monomialWeights (ZZ,List,List) := (a,B,D) ->(
     message := rangeCheck(a,B,D);
     if message_0 == false then return message_1;    
     --A := QQ[t_0,t_1,t_2, MonomialOrder => Lex];
     load getFileName(a,B,D);
-    value("dmw"|shortFileName(B,D))
+    value("mw"|shortFileName(B,D))
     )
 
 
