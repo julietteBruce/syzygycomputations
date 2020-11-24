@@ -110,7 +110,7 @@ apply(dataRange,D->(
 --- One failure....
 totalBettiTally(0,{2,3},{4,5})
 
-
+	
 
 
 
