@@ -265,7 +265,7 @@ testConjecture(0,2,lastSchurConjectureQ2,ShowFails=>true)
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 -----
------ CONJECTURE 6.1.(2)
+----- CONJECTURE 6.2.(2)
 -----
 ----- INPUT: (a,B,D,q)
 -----
@@ -306,7 +306,7 @@ testConjecture(0,1,secondLastSchurConjectureQ2D2,ShowFails=>true)
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 -----
------ CONJECTURE 6.1.(3)
+----- CONJECTURE 6.2.(3)
 -----
 ----- INPUT: (a,B,D,q)
 -----
@@ -356,13 +356,13 @@ testConjecture(0,1,secondLastSchurConjectureQ2D3,ShowFails=>true)
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 -----
------ QUESTION 6.1.(2)
+----- QUESTION 6.3
 -----
 ----- INPUT: (a,B,D,q)
 -----
 ----- OUPUT: True or False
 -----
------ DESCRIPTION: This function tests whether our conjecture concerning 
+----- DESCRIPTION: This function tests whether our question concerning 
 ----- the Schur functor decomposition for the second to last entry in the q=1
 ----- row is true for the input (a,B,D,q).
 -----
