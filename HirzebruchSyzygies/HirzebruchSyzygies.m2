@@ -44,7 +44,7 @@ newPackage("HirzebruchSyzygies",
     Date => "13 May 2019",
     Headline => "Data for syzygies of embeddings of Hirzebruch surfaces",
     Authors => {
-        {Name => "Juliette Bruce",           Email => "jebruce2@wisc.edu",       HomePage => "https://juliettebruce.github.io"},
+        {Name => "Juliette Bruce",           Email => "juliette.bruce@berkeley.edu",       HomePage => "https://juliettebruce.github.io"},
         {Name => "Daniel Corey",           Email => "",       HomePage => ""},
         {Name => "Daniel Erman",             Email => "derman@math.wisc.edu",    HomePage => "http://www.math.wisc.edu/~derman/"},	     
         {Name => "Steve Goldstein",          Email => "sgoldstein@wisc.edu",   HomePage => ""},
@@ -62,10 +62,8 @@ export {
   "schurBetti", -- docs
   "totalBetti", -- docs
   "totalBettiTally",
-  "monomialWeights", -- docs
   "dominantWeightsBetti",
   "repsWithoutMultiplicity",
-  "monomialDominantWeights" -- docs
   --"lexWeightsBetti", --  docs
   --"numDistinctRepsBetti", -- docs
   --"numRepsBetti", -- docs
@@ -77,12 +75,6 @@ export {
 ----- CODE
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-
-
-
---  We've had issues with multigraded Hilbert series
---  when A is not a globally defined ring.
---if A === symbol A then A = QQ[t_0,t_1,t_2,MonomialOrder => Lex];
 
 
 --------------------------------------------------------------------
@@ -294,32 +286,6 @@ dominantWeightsBetti (ZZ,List,List) := (a,B,D) ->(
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
------
------ OUPUT: A hash table containing lists of the lex-leading
------ weights of the Schur functors appearing in the decomposition 
------ of the graded Betti numbers for O(B) on F_a embedded by O(D).
------
------ DESCRIPTION: This function returns a hash table whose keys 
------ are pairs (p,q) with the corresponding value being a list
------ of the Schur functors of lex-leading weight appearing in the 
------ decomposition of K_{p,q}(a,B;D). Note the Schur functors 
------ are recorded via their weights {a,b,c}. See [Sec 1.3, BEGY] 
------ for definitions.
----------------------------------------------------------------------
----------------------------------------------------------------------
-monomialWeights = method();
-monomialWeights (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
-    if message_0 == false then return message_1;    
-    --A := QQ[t_0,t_1,t_2, MonomialOrder => Lex];
-    load getFileName(a,B,D);
-    value("mw"|shortFileName(B,D))
-    )
-
-
---------------------------------------------------------------------
---------------------------------------------------------------------
 ----- INPUT: (H) 
 -----
 ----- OUPUT: A hash table containing the number of distinct Schur 
@@ -439,7 +405,6 @@ bsCoeffs  (ZZ,List,List) := (a,B,D) ->(
 load ("./tests.m2")
 beginDocumentation()
 load ("./doc2.m2")
---Daniel: I screwed something up so I temporarily renamed the doc file.
 
 end--;
 
