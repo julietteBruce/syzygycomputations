@@ -16,7 +16,7 @@
 -- this program.  If not, see <http://www.gnu.org/licenses/>.
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PURPOSE : Data for Veronese embeddings of P1 X P1 
+-- PURPOSE : Syzygy data for embeddings of P1 X P1 
 --
 --
 -- PROGRAMMERS : Juliette Bruce, Daniel Corey, Daniel Erman, Steve Goldstein, Bobby Laudone, Erika Pirnes, Jay yang
@@ -39,10 +39,10 @@
 
 
 
-newPackage("HirzebruchSyzygies",
-    Version => "1.1",
+newPackage("P1P1Syzygies",
+    Version => "1.2",
     Date => "13 May 2019",
-    Headline => "Data for syzygies of embeddings of Hirzebruch surfaces",
+    Headline => "Data for syzygies of embeddings of P^1xP^1",
     Authors => {
         {Name => "Juliette Bruce",           Email => "juliette.bruce@berkeley.edu",       HomePage => "https://juliettebruce.github.io"},
         {Name => "Daniel Corey",           Email => "",       HomePage => ""},
@@ -57,15 +57,18 @@ newPackage("HirzebruchSyzygies",
   )
 
 export {
-  "makeBettiTallyP1P1", -- docs
-  "multiBettiP1P1", -- docs
-  "schurBettiP1P1", -- docs
-  "totalBettiP1P1", -- docs
-  "totalBettiTallyP1P1",
+  "makeBettiTally", -- needs test
+  "multiBettiP1P1",
+  "schurBettiP1P1",
+  "totalBettiP1P1", 
+  "totalBettiTallyP1P1", -- needs test
   "repsWithoutMultiplicityP1P1",
-  --"lexWeightsBetti", --  docs
-  --"numDistinctRepsBettiP1P1", -- docs
-  --"numRepsBettiP1P1", -- docs
+  "numDistinctRepsBettiP1P1",
+  "numRepsBettiP1P1",
+  "numDistinctRepsBetti", -- should not be needed?
+  "totalBettiTally", -- should not be needed?
+  "numRepsBetti", -- should not be needed?
+  "totalBetti" -- should not be needed?
   --"bsCoeffsP1P1" -- docs
   }
 
@@ -88,27 +91,27 @@ export {
 ----- (p,q) such that H#(p,q)=>{K_{p,q}(M)}.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
-makeBettiTallyP1P1 = method();
-makeBettiTallyP1P1 HashTable := H ->(
+makeBettiTally = method();
+makeBettiTally HashTable := H ->(
     new BettiTally from apply(keys H, h-> (h_0,{h_0+h_1},h_0+h_1)=> H#h)
     )
 
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: (true,null) or (false, error message)
 -----
 ----- DESCRIPTION: This unexported function is used to check whether 
 ----- we have  data for a particular case. If we have data for O(B)
------ on F_a embedded by O(D) then it returns (true,null) otherwise it 
+----- on P1xP1 embedded by O(D) then it returns (true,null) otherwise it 
 ----- returns (false, error message). This is primarily used as a
 ----- way forother functions to quickly produce error messages
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 rangeCheck = method();
-rangeCheck (ZZ,List,List) :=(a,B,D) ->(
+rangeCheck (List,List) := (B,D) ->(
     message := (true,null);
     --if n > 2 or n < 1 then message = (false,"Need n = 1 or 2");
     --if b >= d or b < 0 then message = (false,"Need 0 <= b < d");    
@@ -128,7 +131,7 @@ rangeCheck (ZZ,List,List) :=(a,B,D) ->(
 -----
 ----- DESCRIPTION: This non-exported function outputs the part of
 ----- path for  the auxilary file containing the data for 
------ O(B) on F_a embedded by O(D) as a string. It is only used 
+----- O(B) on P1xP1 embedded by O(D) as a string. It is only used 
 ----- internally to ensure that other functions look for the data files
 ----- in the correct path. It seems curDir needs to be defined outside 
 ----- of the function.
@@ -145,116 +148,113 @@ shortFileName := (B,D)->(
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: string
 -----
 ----- DESCRIPTION: This non-exported function outputs the path for 
------ the auxilary file containing the data for O(B) on F_a embedded
+----- the auxilary file containing the data for O(B) on P1xP1 embedded
 ----- by O(D) as a string. It is only used internally to ensure that
 ----- other functions look for the data files in the correct path.
 ----- It seems curDir needs to be defined outside of the function.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 curDir := currentFileDirectory;
-getFileName := (a,B,D) ->(curDir|"P1P1Syzygies/bettiF"|toString(a)|"_" | fileName(B,D) |".m2")
+getFileName := (B,D) ->(curDir|"P1P1Syzygies/bettiF0"|"_" | fileName(B,D) |".m2")
 
-getMgFileName := (a,B,D) ->(curDir|"P1P1Syzygies/mgbettiF"|toString(a)|"_" | fileName(B,D) |".m2")
+getMgFileName := (B,D) ->(curDir|"P1P1Syzygies/mgbettiF0"|"_" | fileName(B,D) |".m2")
 
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A hash table containing the multigraded Betti data for 
------ O(B) on F_a embedded by O(D).
+----- O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This function returns a hashtable containing the 
------ multigraded Betti data for O(B) on F_a embedded by O(D). The
+----- multigraded Betti data for O(B) on P1xP1 embedded by O(D). The
 ----- keys for this hash table are pairs (p,q) corresponding to the
------ Betti number K_{p,q}(a,B;D). Notice that the multigraded Betti
------ data is stored via a mulitgraded Hilbert series. See
------ [Sec 1.1, BEGY] for definitions.
+----- Betti number K_{p,q}(P1xP1,B;D). Notice that the multigraded Betti
+----- data is stored via a mulitgraded Hilbert series.
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 multiBettiP1P1 = method();
-multiBettiP1P1 (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+multiBettiP1P1 (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1;
-    load getMgFileName(a,B,D);
+    load getMgFileName(B,D);
     value("mb"|shortFileName(B,D))
     )
 
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A hash table containing the Schur Betti data for 
------ O(B) on F_a embedded by O(D).
+----- O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This function returns a hashtable containing the 
------ Schur Betti data for O(B) on F_a embedded by O(D). The
+----- Schur Betti data for O(B) on P1xP1 embedded by O(D). The
 ----- keys for this hash table are pairs (p,q) corresponding to the
------ Betti number K_{p,q}(a,B;D). Notice that the Schur Betti data
+----- Betti number K_{p,q}(P1xP,B;D). Notice that the Schur Betti data
 ----- is stored as a list of pairs ({a,b,c},m) where {a,b,c} is the
 ----- partition describing the Schur functor and m is the multiplicity
------ with which this Shur functor appears in K_{p,q}(a,B;D). See
------ [Sec 1.2, BEGY] for definitions.
+----- with which this Shur functor appears in K_{p,q}(P1xP1,B;D).
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 schurBettiP1P1 = method();
-schurBettiP1P1 (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+schurBettiP1P1 (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1; 
-    load getFileName(a,B,D);
+    load getFileName(B,D);
     value("sb"|shortFileName(B,D))
     )
 
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A hash table containing the total graded Betti data for 
------ O(B) on F_a embedded by O(D).
+----- O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This function returns a hash table containing the 
------ total graded Betti data for O(B) on F_a embedded by O(D). The
+----- total graded Betti data for O(B) on P1xP1 embedded by O(D). The
 ----- keys for this hash table are pairs (p,q) with the corresponding
------ value being the Betti number dim K_{p,q}(a,B;D). This function
+----- value being the Betti number dim K_{p,q}(P1xP1,B;D). This function
 ----- is the same as totalBettiTally expect that the ouptut is a hash table
------ instead of a BettiTally. See [Sec 1.1, BEGY] for definitions.
+----- instead of a BettiTally.
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 totalBettiP1P1 = method();
-totalBettiP1P1 (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+totalBettiP1P1 (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1;    
-    load getFileName(a,B,D);
+    load getFileName(B,D);
     value("tb"|shortFileName(B,D))
     )
 
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A BettiTally containing the total graded Betti data for 
------ O(B) on F_a embedded by O(D).
+----- O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This function returns a BettiTally containing the 
------ total graded Betti data for O(B) on F_a embedded by O(D). This 
+----- total graded Betti data for O(B) on P1xP1 embedded by O(D). This 
 ----- function is the same as totalBetti expect that the ouptut is a
------ BettiTally instead of a hash table. See [Sec 1.1, BEGY] for 
------ definitions.
+----- BettiTally instead of a hash table.
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 totalBettiTallyP1P1 = method();
-totalBettiTallyP1P1 (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+totalBettiTallyP1P1 (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1;
-    load getFileName(a,B,D);
+    load getFileName(B,D);
     makeBettiTally value("tb"|shortFileName(B,D))
     )
 
@@ -264,7 +264,7 @@ totalBettiTallyP1P1 (ZZ,List,List) := (a,B,D) ->(
 -----
 ----- OUPUT: A hash table containing the number of distinct Schur 
 ----- functors appearing in the decomposition of the graded Betti 
------ numbers for O(B) on F_a embedded by O(D).
+----- numbers for O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: It is often useful to forget the multiplicty of 
 ----- the Schur functors appearing in a decomposition. Given a 
@@ -280,69 +280,70 @@ repsWithoutMultiplicityP1P1  (HashTable) := (H) ->(
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A hash table containing the number of distinct Schur 
 ----- functors appearing in the decomposition of the graded Betti 
------ numbers for O(B) on F_a embedded by O(D).
+----- numbers for O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This function returns a hash table whose keys 
 ----- are pairs (p,q) with the corresponding value being the number
 ----- of distinct Schur functors appearing in the decomposition of
------ K_{p,q}(a,B;D). See [Sec 1.2, BEGY] for definitions.
+----- K_{p,q}(P1xP1,B;D).
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 numDistinctRepsBettiP1P1 = method();
-numDistinctRepsBettiP1P1  (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+numDistinctRepsBettiP1P1  (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1;    
-    load getFileName(a,B,D);
-    value("nr"|shortFileName(B,D))
+    H := schurBettiP1P1(B,D);
+    applyValues(H,v->#v)
     )
 
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A hash table containing the number of Schur functors
 ----- appearing in the decomposition of the graded Betti numbers 
------ for O(B) on F_a embedded by O(D).
+----- for O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This function returns a hash table whose keys 
 ----- are pairs (p,q) with the corresponding value being the number
 ----- of Schur functors counted with multiplicity appearing in the 
------ decomposition of K_{p,q}(a,B;D). See [Sec 1.2, BEGY] for
------ definitions.
+----- decomposition of K_{p,q}(P1xP1,B;D).
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
 numRepsBettiP1P1 = method();
-numRepsBettiP1P1  (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+numRepsBettiP1P1  (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1;    
-    load getFileName(a,B,D);
-    value("nrm"|shortFileName(B,D))
+    H := schurBettiP1P1(B,D);
+    applyValues(H,v->(
+	    sum apply(v,i->i#1))
     )
+)
 
 --------------------------------------------------------------------
 --------------------------------------------------------------------
------ INPUT: (a,B,D) 
+----- INPUT: (B,D) 
 -----
 ----- OUPUT: A list of the Boij-Soederberg coefficents for the 
------ decomposition of the Betti table of O(B) on F_a embedded by O(D).
+----- decomposition of the Betti table of O(B) on P1xP1 embedded by O(D).
 -----
 ----- DESCRIPTION: This funnction returns a ist of the Boij-Soederberg 
 ----- coefficents for the  decomposition of the Betti table of O(B) on
------ F_a embedded by O(D). See [Sec 6.3, BEGY] for definitions. 
+----- P1xP1 embedded by O(D).
 ---------------------------------------------------------------------
 ---------------------------------------------------------------------
-bsCoeffsP1P1 = method();
-bsCoeffsP1P1  (ZZ,List,List) := (a,B,D) ->(
-    message := rangeCheck(a,B,D);
+-*bsCoeffsP1P1 = method();
+bsCoeffsP1P1  (List,List) := (B,D) ->(
+    message := rangeCheck(B,D);
     if message_0 == false then return message_1;    
-    load getFileName(a,B,D);
+    load getFileName(B,D);
     value("bs"|shortFileName(B,D))
-    )
+    )*-
 
 
 --------------------------------------------------------------------
@@ -351,11 +352,11 @@ bsCoeffsP1P1  (ZZ,List,List) := (a,B,D) ->(
 --------------------------------------------------------------------
 --------------------------------------------------------------------
 
-load ("./tests.m2")
+load ("./P1P1Syzygies/tests.m2")
 beginDocumentation()
-load ("./doc2.m2")
+load ("./P1P1Syzygies/doc2.m2")
 
-end--;
+end
 
 
 
@@ -368,8 +369,9 @@ end--;
 ---
 ---
 restart
-uninstallPackage "HirzebruchSyzygies"
+uninstallPackage "P1P1Syzygies"
 restart
+installPackage "P1P1Syzygies"
+check "P1P1Syzygies"
 installPackage "HirzebruchSyzygies"
-check "HirzebruchSyzygies"
 viewHelp SchurVeronese
