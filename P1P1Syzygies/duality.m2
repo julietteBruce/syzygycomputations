@@ -63,7 +63,7 @@ makeDualBettiFile = (B,D) -> (
     f := openOut(fName);
     f << "A := QQ[t_0,t_1,t_2,t_3];" << endl;
     f << "--tb stands for Total Betti numbers" << endl;
-    f << "tb"|dB#0|dB#1|dD#0|dD#1|" = "|toString(dualTotalBetti(B,D))|";" << endl;
+    f << "tb"|dB#0|dB#1|dD#0|dD#1|" = "|toString(dualTotalBetti(B,D))|";" << endl; 
     f << "--sb represents the betti numbers as sums of Schur functors" << endl;
     f << "sb"|dB#0|dB#1|dD#0|dD#1|" = "|toString(dualSchurBetti(B,D))|";" << endl; 
 --    f << "--dw stands for dominant weights" << endl;
@@ -90,8 +90,8 @@ makeDualmgBettiFile = (B,D) -> (
 
 toAdd = {{{0,0},{2,10}},{{0,0},{2,9}},{{0,0},{3,6}},{{0,1},{3,6}},{{0,1},{4,5}},{{0,2},{3,6}},{{0,2},{3,7}},{{0,3},{3,6}},{{0,3},{3,7}},{{0,3},{4,6}},{{0,4},{3,6}},{{1,0},{3,8}},{{1,0},{3,9}},{{1,0},{4,5}},{{1,1},{3,8}},{{1,1},{4,5}},{{1,1},{4,6}},{{2,0},{4,6}},{{2,0},{4,7}}};
 
-
-scan(toAdd, l -> makeDualBettiFile(l#0+D-{2,2}, l#1) )
+scan(toAdd, l -> makeDualBettiFile(l#1-{2,2}-l#0, l#1) )
+scan(toAdd, l -> makeDualmgBettiFile(l#1-{2,2}-l#0, l#1) )
 
 
 
