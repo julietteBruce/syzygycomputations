@@ -25,3 +25,24 @@ apply(L,D->(
 	g<< endl;
 	))
 close g
+
+H = schurBetti(0,{1,2},{2,3})
+g = openOut("schurExampleForPaper.txt")
+apply(sort keys H,k->(
+	if H#k != {} then (
+	    g << "K_{"|toString(k#0)|","|toString(k#1)|"}(\\PP^{1}\\times\\PP^{1},(1,2);(2,3))\\;=\\;&";
+	    apply(sort H#k,i->(
+		    if i#1 == 1 then (
+			j = i#0;
+			g<< "\\bS_{("|toString(j#0)|","|toString(j#1)|","|toString(j#2)|","|toString(j#3)|")}\\oplus";
+			);
+		    if i#1 != 1 then (
+			j = i#0;
+			g<< "\\bS_{("|toString(j#0)|","|toString(j#1)|","|toString(j#2)|","|toString(j#3)|")}^{\\oplus"|toString(i#1)|"}\\oplus";
+			);
+		    ));
+	    g<< endl;
+	    g<< endl;
+	    );
+	))
+close g

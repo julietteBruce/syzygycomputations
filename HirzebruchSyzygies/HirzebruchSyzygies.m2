@@ -63,7 +63,7 @@ export {
   "totalBetti", -- docs
   "totalBettiTally",
   "dominantWeightsBetti",
-  "repsWithoutMultiplicity",
+  "repsWithoutMultiplicity"
   --"lexWeightsBetti", --  docs
   --"numDistinctRepsBetti", -- docs
   --"numRepsBetti", -- docs
